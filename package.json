@@ -1,0 +1,20 @@
+{
+  "name": "minha-loja",
+  "version": "1.0.0",
+  "main": "backend/servidor.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node backend/servidor.js"
+  },
+  "dependencies": {
+    "@vladmandic/face-api": "^1.7.15",
+    "canvas": "^3.2.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "face-api.js": "^0.22.2",
+    "mercadopago": "^2.0.6"
+  }
+}

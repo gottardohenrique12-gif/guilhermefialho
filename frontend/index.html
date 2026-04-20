@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Guilherme Fialho Soares — Fotografia</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <!-- CABEÇALHO -->
+  <header>
+    <div class="header-conteudo">
+      <div>
+        <h1>Guilherme Fialho Soares</h1>
+        <p>Fotos em alta resolução com licença inclusa</p>
+      </div>
+      <button class="btn-carrinho" onclick="abrirCarrinho()">
+        🛒 <span id="carrinho-count">0</span>
+        <span class="carrinho-label">Carrinho</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- BANNER DE DESCONTO -->
+  <div class="banner-desconto">
+    Compre 3+ fotos e ganhe <strong>10% off</strong> •
+    Compre 5+ fotos e ganhe <strong>20% off</strong>
+  </div>
+
+  <!-- RECONHECIMENTO FACIAL -->
+  <section class="secao-facial">
+    <div class="facial-conteudo">
+      <div class="facial-texto">
+        <h2>Encontre suas fotos automaticamente</h2>
+        <p>Tire uma selfie ou envie uma foto sua e encontramos todas as imagens em que você aparece!</p>
+      </div>
+      <button class="btn-facial" onclick="abrirReconhecimento()">
+        Encontrar minhas fotos
+      </button>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       NAVEGAÇÃO PRINCIPAL: EVENTOS / ARTÍSTICAS
+  ══════════════════════════════════════════════════════════ -->
+  <nav class="nav-secoes">
+    <div class="nav-secoes-inner">
+      <button class="nav-secao-btn ativo" onclick="mudarSecao('eventos')" id="nav-btn-eventos">
+        <span>Eventos</span>
+      </button>
+      <button class="nav-secao-btn" onclick="mudarSecao('artisticas')" id="nav-btn-artisticas">
+        <span>Fotos Artísticas</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════════════════════
+       SEÇÃO EVENTOS
+  ══════════════════════════════════════════════════════════ -->
+  <section id="secao-eventos" class="secao-conteudo">
+    <!-- Abas dos eventos -->
+    <div class="abas-container">
+      <div class="abas-scroll" id="abas-eventos"></div>
+    </div>
+    <!-- Grade de fotos do evento selecionado -->
+    <main>
+      <div id="grade-eventos" class="grade"></div>
+    </main>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       SEÇÃO FOTOS ARTÍSTICAS
+  ══════════════════════════════════════════════════════════ -->
+  <section id="secao-artisticas" class="secao-conteudo escondido">
+    <!-- Abas das subcategorias artísticas -->
+    <div class="abas-container">
+      <div class="abas-scroll" id="abas-artisticas"></div>
+    </div>
+    <!-- Grade de fotos da categoria selecionada -->
+    <main>
+      <div id="grade-artisticas" class="grade"></div>
+    </main>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       MODAL DE RECONHECIMENTO FACIAL
+  ══════════════════════════════════════════════════════════ -->
+  <div id="modal-facial" class="modal escondido">
+    <div class="modal-conteudo facial-modal-conteudo">
+      <button class="fechar" onclick="fecharReconhecimento()">✕</button>
+      <h2>Encontrar minhas fotos</h2>
+
+      <div id="facial-etapa-1">
+        <p class="facial-instrucao">Como você prefere enviar sua foto?</p>
+        <div class="facial-opcoes">
+          <button class="facial-opcao-btn" onclick="usarCamera()">
+            <span class="facial-opcao-icone">📷</span>
+            <span>Usar câmera</span>
+          </button>
+          <button class="facial-opcao-btn" onclick="document.getElementById('facial-upload').click()">
+            <span class="facial-opcao-icone">🖼️</span>
+            <span>Enviar foto</span>
+          </button>
+        </div>
+        <input type="file" id="facial-upload" accept="image/*" style="display:none" onchange="processarUpload(event)"/>
+      </div>
+
+      <div id="facial-etapa-camera" class="escondido">
+        <div class="camera-container">
+          <video id="facial-video" autoplay playsinline></video>
+          <div class="camera-guia"></div>
+        </div>
+        <div class="camera-acoes">
+          <button class="btn-capturar" onclick="capturarFoto()">📸 Capturar selfie</button>
+          <button class="btn-cancelar-camera" onclick="cancelarCamera()">Cancelar</button>
+        </div>
+      </div>
+
+      <div id="facial-etapa-preview" class="escondido">
+        <div class="preview-container">
+          <canvas id="facial-canvas"></canvas>
+          <div id="facial-face-box" class="face-box escondido"></div>
+        </div>
+        <div id="facial-status" class="facial-status"></div>
+        <div class="preview-acoes">
+          <button id="btn-buscar" class="btn-buscar" onclick="buscarFotos()">🔍 Buscar minhas fotos</button>
+          <button class="btn-tentar-novamente" onclick="voltarEtapa1()">↩ Tentar novamente</button>
+        </div>
+      </div>
+
+      <div id="facial-etapa-resultados" class="escondido">
+        <div id="facial-resultados-header"></div>
+        <div id="facial-resultados-grade" class="facial-grade"></div>
+        <button class="btn-tentar-novamente" onclick="voltarEtapa1()" style="margin-top:1rem">
+          ↩ Buscar novamente
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CARRINHO -->
+  <div id="modal-carrinho" class="modal escondido">
+    <div class="modal-conteudo carrinho-conteudo">
+      <button class="fechar" onclick="fecharCarrinho()">✕</button>
+      <h2>🛒 Seu Carrinho</h2>
+
+      <div id="carrinho-vazio" class="carrinho-vazio">
+        <p>Seu carrinho está vazio.</p>
+        <button onclick="fecharCarrinho()">Ver fotos</button>
+      </div>
+
+      <div id="carrinho-itens"></div>
+
+      <div id="carrinho-resumo" class="carrinho-resumo escondido">
+        <div class="resumo-linha">
+          <span>Subtotal:</span>
+          <span id="resumo-subtotal"></span>
+        </div>
+        <div id="resumo-desconto-linha" class="resumo-linha desconto-linha escondido">
+          <span id="resumo-desconto-label"></span>
+          <span id="resumo-desconto-valor" class="desconto-valor"></span>
+        </div>
+        <div class="resumo-linha total-linha">
+          <span>Total:</span>
+          <span id="resumo-total"></span>
+        </div>
+
+        <div class="campo-email">
+          <label for="email-comprador">Seu e-mail (para receber os downloads):</label>
+          <input type="email" id="email-comprador" placeholder="voce@email.com"/>
+        </div>
+
+        <button id="btn-pagar" onclick="iniciarPagamento()">
+          Pagar com Pix
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DO PIX -->
+  <div id="modal-pix" class="modal escondido">
+    <div class="modal-conteudo pix-conteudo">
+      <button class="fechar" onclick="fecharPix()">✕</button>
+      <h2>Pagamento via Pix</h2>
+      <p>Escaneie o QR Code com o app do seu banco:</p>
+      <div id="qrcode"></div>
+      <p class="valor-pix">Total: <strong id="valor-pix-texto"></strong></p>
+      <div class="copia-cola">
+        <p>Ou copie o código Pix:</p>
+        <div class="codigo-area">
+          <span id="codigo-pix-texto"></span>
+          <button onclick="copiarPix()">📋 Copiar</button>
+        </div>
+      </div>
+      <div id="mensagem-copiado" class="escondido">✅ Código copiado!</div>
+      <div id="status-pagamento" class="status-aguardando">
+        ⏳ Aguardando pagamento...
+      </div>
+    </div>
+  </div>
+
+  <!-- FUNDO ESCURO -->
+  <div id="overlay" class="escondido" onclick="fecharTudo()"></div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-conteudo">
+      <span>© 2025 Guilherme Fialho Soares</span>
+      <a href="https://guilhermefialhosoaresfotografia.myportfolio.com/" target="_blank" rel="noopener">
+        Ver portfólio
+      </a>
+      <span>Feito por Henrique Gottardo</span>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <script src="produto.js"></script>
+  <script src="app.js"></script>
+  <script src="facial.js"></script>
+</body>
+</html>
