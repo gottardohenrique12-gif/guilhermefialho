@@ -28,19 +28,6 @@
     Compre 5+ fotos e ganhe <strong>20% off</strong>
   </div>
 
-  <!-- RECONHECIMENTO FACIAL -->
-  <section class="secao-facial">
-    <div class="facial-conteudo">
-      <div class="facial-texto">
-        <h2>Encontre suas fotos automaticamente</h2>
-        <p>Tire uma selfie ou envie uma foto sua e encontramos todas as imagens em que você aparece!</p>
-      </div>
-      <button class="btn-facial" onclick="abrirReconhecimento()">
-        Encontrar minhas fotos
-      </button>
-    </div>
-  </section>
-
   <!-- ══════════════════════════════════════════════════════
        NAVEGAÇÃO PRINCIPAL: EVENTOS / ARTÍSTICAS
   ══════════════════════════════════════════════════════════ -->
@@ -82,62 +69,6 @@
       <div id="grade-artisticas" class="grade"></div>
     </main>
   </section>
-
-  <!-- ══════════════════════════════════════════════════════
-       MODAL DE RECONHECIMENTO FACIAL
-  ══════════════════════════════════════════════════════════ -->
-  <div id="modal-facial" class="modal escondido">
-    <div class="modal-conteudo facial-modal-conteudo">
-      <button class="fechar" onclick="fecharReconhecimento()">✕</button>
-      <h2>Encontrar minhas fotos</h2>
-
-      <div id="facial-etapa-1">
-        <p class="facial-instrucao">Como você prefere enviar sua foto?</p>
-        <div class="facial-opcoes">
-          <button class="facial-opcao-btn" onclick="usarCamera()">
-            <span class="facial-opcao-icone">📷</span>
-            <span>Usar câmera</span>
-          </button>
-          <button class="facial-opcao-btn" onclick="document.getElementById('facial-upload').click()">
-            <span class="facial-opcao-icone">🖼️</span>
-            <span>Enviar foto</span>
-          </button>
-        </div>
-        <input type="file" id="facial-upload" accept="image/*" style="display:none" onchange="processarUpload(event)"/>
-      </div>
-
-      <div id="facial-etapa-camera" class="escondido">
-        <div class="camera-container">
-          <video id="facial-video" autoplay playsinline></video>
-          <div class="camera-guia"></div>
-        </div>
-        <div class="camera-acoes">
-          <button class="btn-capturar" onclick="capturarFoto()">📸 Capturar selfie</button>
-          <button class="btn-cancelar-camera" onclick="cancelarCamera()">Cancelar</button>
-        </div>
-      </div>
-
-      <div id="facial-etapa-preview" class="escondido">
-        <div class="preview-container">
-          <canvas id="facial-canvas"></canvas>
-          <div id="facial-face-box" class="face-box escondido"></div>
-        </div>
-        <div id="facial-status" class="facial-status"></div>
-        <div class="preview-acoes">
-          <button id="btn-buscar" class="btn-buscar" onclick="buscarFotos()">🔍 Buscar minhas fotos</button>
-          <button class="btn-tentar-novamente" onclick="voltarEtapa1()">↩ Tentar novamente</button>
-        </div>
-      </div>
-
-      <div id="facial-etapa-resultados" class="escondido">
-        <div id="facial-resultados-header"></div>
-        <div id="facial-resultados-grade" class="facial-grade"></div>
-        <button class="btn-tentar-novamente" onclick="voltarEtapa1()" style="margin-top:1rem">
-          ↩ Buscar novamente
-        </button>
-      </div>
-    </div>
-  </div>
 
   <!-- MODAL CARRINHO -->
   <div id="modal-carrinho" class="modal escondido">
@@ -214,7 +145,6 @@
     </div>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <script src="produto.js"></script>
   <script src="app.js"></script>
   <script src="facial.js"></script>
