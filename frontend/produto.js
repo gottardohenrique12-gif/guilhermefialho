@@ -221,6 +221,15 @@ const CATEGORIAS_ARTISTICAS = [
         preview: 'img/retrato-na-praia-2.jpg',
         arquivo: 'retrato-na-praia-2.jpg',
       },
+      {
+        id: 'ret-008',
+        categoria: 'artistica',
+        categoriaArtId:'retratos',
+        nome: 'Henrique Gottardo',
+        preco: 22.00,
+        preview: 'img/fotoespelho1.jpeg',
+        arquivo: 'fotoespelho1.jpeg',
+      },
       { 
         id: 'ret-007',
         categoria: 'artistica',
