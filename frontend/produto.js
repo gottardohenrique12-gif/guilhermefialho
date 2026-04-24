@@ -330,7 +330,7 @@ const CATEGORIAS_ARTISTICAS = [
         categoria: 'artistica',
         categoriaArtId: 'luar',
         nome: 'Lua Cheia',
-        preco: 85.00,
+        preco: 1.00,
         preview: 'img/lua-cheia.jpg',
         arquivo: 'lua-cheia.jpg',
       },
