@@ -19,6 +19,7 @@ function init() {
 
   renderizarAbas();
   renderizarGrade();
+  carregarFotosDinamicas();
 }
 
 // ── Troca a seção principal (Eventos ↔ Artísticas) ───────────
@@ -327,3 +328,35 @@ function fecharTudo() { fecharCarrinho(); fecharPix(); }
 
 // ── Inicia ────────────────────────────────────────────────────
 init();
+
+// ── Carrega fotos adicionadas via painel admin ────────────────
+// Adicione esta função e chame carregarFotosDinamicas() dentro de init()
+
+async function carregarFotosDinamicas() {
+  try {
+    const r = await fetch('/api/catalogo');
+    const fotos = await r.json();
+    if (!fotos.length) return;
+
+    fotos.forEach(foto => {
+      if (foto.categoria === 'artistica') {
+        const cat = CATEGORIAS_ARTISTICAS.find(c => c.id === foto.categoriaArtId);
+        if (cat && !cat.fotos.some(f => f.id === foto.id)) {
+          cat.fotos.push(foto);
+          PRODUTOS.push(foto);
+        }
+      } else if (foto.categoria === 'evento') {
+        const ev = EVENTOS.find(e => e.id === foto.eventoId);
+        if (ev && !ev.fotos.some(f => f.id === foto.id)) {
+          ev.fotos.push(foto);
+          PRODUTOS.push(foto);
+        }
+      }
+    });
+
+    renderizarAbas();
+    renderizarGrade();
+  } catch(e) {
+    console.warn('Fotos dinâmicas não carregadas:', e.message);
+  }
+}
