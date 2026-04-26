@@ -350,6 +350,121 @@
       text-align: center;
       padding: 2rem;
     }
+
+    /* ── CATEGORIAS ── */
+    .cat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5rem;
+    }
+
+    @media (max-width: 640px) { .cat-grid { grid-template-columns: 1fr; } }
+
+    .cat-bloco h3 {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cat-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .cat-form .linha {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .cat-form input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.6rem 0.9rem;
+      font-family: var(--sans);
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .cat-form input:focus { border-color: var(--accent); }
+
+    .cat-form input.icone { max-width: 64px; text-align: center; }
+
+    .btn-add-cat {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.2s;
+    }
+
+    .btn-add-cat:hover { opacity: 0.85; }
+
+    .cat-lista {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .cat-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 0.6rem 0.9rem;
+      font-size: 0.85rem;
+    }
+
+    .cat-item-esq {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .cat-item-icone { font-size: 1rem; }
+
+    .cat-item-id {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-left: 0.25rem;
+    }
+
+    .btn-del-cat {
+      background: none;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 0.8rem;
+      padding: 0.2rem 0.5rem;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+    }
+
+    .btn-del-cat:hover { opacity: 1; }
+
+    .cat-vazio {
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-family: var(--mono);
+      padding: 1rem 0;
+    }
   </style>
 </head>
 <body>
@@ -383,6 +498,7 @@
     <div class="tabs">
       <button class="tab-btn ativo" onclick="mudarTab('upload')">Adicionar Foto</button>
       <button class="tab-btn" onclick="mudarTab('fotos')">Gerenciar Fotos</button>
+      <button class="tab-btn" onclick="mudarTab('categorias')">Categorias</button>
     </div>
 
     <!-- TAB UPLOAD -->
@@ -462,6 +578,53 @@
         <div class="loading">Carregando...</div>
       </div>
     </div>
+
+    <!-- TAB CATEGORIAS -->
+    <div class="tab-content" id="tab-categorias">
+      <div class="section-title">Eventos e Categorias</div>
+      <div class="cat-grid">
+
+        <!-- EVENTOS -->
+        <div class="cat-bloco">
+          <h3>Eventos</h3>
+          <div class="cat-form">
+            <div class="linha">
+              <input type="text" id="ev-icone" class="icone" placeholder="🏅" maxlength="4"/>
+              <input type="text" id="ev-nome" placeholder="Nome do evento (ex: Maratona 2025)"/>
+            </div>
+            <div class="linha">
+              <input type="text" id="ev-id" placeholder="ID único (ex: maratona-2025)"/>
+              <button class="btn-add-cat" onclick="criarEvento()">+ Criar</button>
+            </div>
+          </div>
+          <div class="msg" id="msg-ev"></div>
+          <div class="cat-lista" id="lista-eventos">
+            <div class="cat-vazio">Carregando...</div>
+          </div>
+        </div>
+
+        <!-- CATEGORIAS ARTÍSTICAS -->
+        <div class="cat-bloco">
+          <h3>Categorias Artísticas</h3>
+          <div class="cat-form">
+            <div class="linha">
+              <input type="text" id="art-icone" class="icone" placeholder="🌿" maxlength="4"/>
+              <input type="text" id="art-nome" placeholder="Nome da categoria (ex: Retratos)"/>
+            </div>
+            <div class="linha">
+              <input type="text" id="art-id" placeholder="ID único (ex: retratos)"/>
+              <button class="btn-add-cat" onclick="criarCategoriaArt()">+ Criar</button>
+            </div>
+          </div>
+          <div class="msg" id="msg-art"></div>
+          <div class="cat-lista" id="lista-artisticas">
+            <div class="cat-vazio">Carregando...</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -503,20 +666,16 @@
     return r.ok;
   }
 
-  async function mostrarPainel() {
-    document.getElementById('tela-login').style.display = 'none';
-    document.getElementById('painel').style.display = 'block';
-    carregarFotos();
-  }
-
   // ── Tabs ──
   function mudarTab(tab) {
-    document.querySelectorAll('.tab-btn').forEach((b,i) => {
-      b.classList.toggle('ativo', (i === 0 && tab === 'upload') || (i === 1 && tab === 'fotos'));
+    const tabs = ['upload', 'fotos', 'categorias'];
+    document.querySelectorAll('.tab-btn').forEach((b, i) => {
+      b.classList.toggle('ativo', tabs[i] === tab);
     });
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('ativo'));
     document.getElementById(`tab-${tab}`).classList.add('ativo');
     if (tab === 'fotos') carregarFotos();
+    if (tab === 'categorias') carregarCategorias();
   }
 
   // ── Upload ──
@@ -656,7 +815,146 @@
     else alert('Erro ao remover foto.');
   }
 
+  // ── Categorias ──
+  const CATS_FIXAS_ART = [
+    { id: 'paisagens', nome: 'Paisagens', icone: '' },
+    { id: 'animais',   nome: 'Animais',   icone: '' },
+    { id: 'luar',      nome: 'Luar',      icone: '' },
+    { id: 'natureza',  nome: 'Natureza',  icone: '' },
+    { id: 'serra',     nome: 'Serra Gaúcha', icone: '' },
+    { id: 'arquitetura', nome: 'Arquitetura', icone: '' },
+  ];
+  const EVENTOS_FIXOS = [
+    { id: 'meia-maratona', nome: 'Meia Maratona', icone: '' },
+    { id: 'triatlon',      nome: 'Triátlon',       icone: '' },
+  ];
+
+  async function carregarCategorias() {
+    try {
+      const r = await fetch('/api/categorias');
+      const { eventos, artisticas } = await r.json();
+      renderizarListaCat('lista-eventos',    EVENTOS_FIXOS,    eventos,    'evento');
+      renderizarListaCat('lista-artisticas', CATS_FIXAS_ART,   artisticas, 'art');
+      atualizarSelectsCategorias(artisticas, eventos);
+    } catch(e) {
+      document.getElementById('lista-eventos').innerHTML = '<div class="cat-vazio">Erro ao carregar.</div>';
+      document.getElementById('lista-artisticas').innerHTML = '<div class="cat-vazio">Erro ao carregar.</div>';
+    }
+  }
+
+  function renderizarListaCat(containerId, fixas, dinamicas, tipo) {
+    const el = document.getElementById(containerId);
+    const todasFixas = fixas.map(c => `
+      <div class="cat-item">
+        <div class="cat-item-esq">
+          <span class="cat-item-icone">${c.icone}</span>
+          <span>${c.nome}</span>
+          <span class="cat-item-id">${c.id}</span>
+        </div>
+        <span style="font-size:0.7rem;color:var(--muted);font-family:var(--mono)">fixo</span>
+      </div>
+    `).join('');
+
+    const todasDin = dinamicas.map(c => `
+      <div class="cat-item">
+        <div class="cat-item-esq">
+          <span class="cat-item-icone">${c.icone || ''}</span>
+          <span>${c.nome}</span>
+          <span class="cat-item-id">${c.id}</span>
+        </div>
+        <button class="btn-del-cat" onclick="deletarCategoria('${tipo}','${c.id}')">✕</button>
+      </div>
+    `).join('');
+
+    el.innerHTML = todasFixas + (todasDin || '') ||
+      '<div class="cat-vazio">Nenhuma categoria criada ainda.</div>';
+  }
+
+  function atualizarSelectsCategorias(artisticas, eventos) {
+    // Select de categoria artística no upload
+    const selArt = document.getElementById('input-categoria-art');
+    const opcsFixas = CATS_FIXAS_ART.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+    const opcsDin = artisticas.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+    selArt.innerHTML = opcsFixas + opcsDin;
+
+    // Select de filtro de fotos — adiciona eventos dinâmicos
+    const filtro = document.getElementById('filtro-categoria');
+    const base = `
+      <option value="">Todas as categorias</option>
+      ${CATS_FIXAS_ART.map(c => `<option value="${c.id}">${c.nome}</option>`).join('')}
+      ${artisticas.map(c => `<option value="${c.id}">${c.nome}</option>`).join('')}
+      <option value="evento">Eventos</option>
+    `;
+    filtro.innerHTML = base;
+  }
+
+  async function criarEvento() {
+    const id    = document.getElementById('ev-id').value.trim().toLowerCase().replace(/\s+/g,'-');
+    const nome  = document.getElementById('ev-nome').value.trim();
+    const icone = document.getElementById('ev-icone').value.trim();
+    if (!id || !nome) return mostrarMsg('ev', 'Preencha ID e nome.', 'erro');
+    if (EVENTOS_FIXOS.some(e => e.id === id)) return mostrarMsg('ev', 'Esse ID já existe como evento fixo.', 'erro');
+
+    const r = await fetch('/api/admin/eventos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': token },
+      body: JSON.stringify({ id, nome, icone })
+    });
+    if (r.ok) {
+      mostrarMsg('ev', '✅ Evento criado!', 'sucesso');
+      document.getElementById('ev-id').value = '';
+      document.getElementById('ev-nome').value = '';
+      document.getElementById('ev-icone').value = '';
+      carregarCategorias();
+    } else {
+      const d = await r.json();
+      mostrarMsg('ev', '❌ ' + (d.erro || 'Erro.'), 'erro');
+    }
+  }
+
+  async function criarCategoriaArt() {
+    const id    = document.getElementById('art-id').value.trim().toLowerCase().replace(/\s+/g,'-');
+    const nome  = document.getElementById('art-nome').value.trim();
+    const icone = document.getElementById('art-icone').value.trim();
+    if (!id || !nome) return mostrarMsg('art', 'Preencha ID e nome.', 'erro');
+    if (CATS_FIXAS_ART.some(c => c.id === id)) return mostrarMsg('art', 'Esse ID já existe como categoria fixa.', 'erro');
+
+    const r = await fetch('/api/admin/artisticas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': token },
+      body: JSON.stringify({ id, nome, icone })
+    });
+    if (r.ok) {
+      mostrarMsg('art', '✅ Categoria criada!', 'sucesso');
+      document.getElementById('art-id').value = '';
+      document.getElementById('art-nome').value = '';
+      document.getElementById('art-icone').value = '';
+      carregarCategorias();
+    } else {
+      const d = await r.json();
+      mostrarMsg('art', '❌ ' + (d.erro || 'Erro.'), 'erro');
+    }
+  }
+
+  async function deletarCategoria(tipo, id) {
+    if (!confirm(`Remover esta ${tipo === 'evento' ? 'evento' : 'categoria'}? As fotos associadas a ela continuarão no catálogo.`)) return;
+    const endpoint = tipo === 'evento' ? 'eventos' : 'artisticas';
+    const r = await fetch(`/api/admin/${endpoint}/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': token }
+    });
+    if (r.ok) carregarCategorias();
+    else alert('Erro ao remover.');
+  }
+
   // ── Init ──
+  async function mostrarPainel() {
+    document.getElementById('tela-login').style.display = 'none';
+    document.getElementById('painel').style.display = 'block';
+    await carregarCategorias(); // carrega selects antes de tudo
+    carregarFotos();
+  }
+
   (async () => {
     if (token && await verificarToken()) {
       mostrarPainel();

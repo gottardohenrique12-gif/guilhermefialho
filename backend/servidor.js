@@ -6,7 +6,47 @@ const path     = require('path');
 const fs       = require('fs');
 const crypto   = require('crypto');
 const multer   = require('multer');
+const sharp    = require('sharp');
 const { criarCobrancaPix, consultarPagamento } = require('./pagamento');
+
+// ── Marca d'água ─────────────────────────────────────────────
+const TEXTO_MARCA = '© Guilherme Fialho Soares';
+
+async function aplicarMarcaDagua(caminhoImg) {
+  const meta  = await sharp(caminhoImg).metadata();
+  const W     = meta.width;
+  const H     = meta.height;
+
+  const fontSize   = Math.max(18, Math.round(Math.min(W, H) * 0.035));
+  const repeticoes = 6;
+  const passo      = Math.round(Math.max(W, H) / repeticoes);
+  const svgTextos  = [];
+
+  for (let i = -repeticoes; i <= repeticoes * 2; i++) {
+    const x = i * passo;
+    svgTextos.push(`
+      <text x="${x}" y="0"
+        font-size="${fontSize}" font-family="Arial, sans-serif" font-weight="bold"
+        fill="white" fill-opacity="0.45"
+        stroke="black" stroke-width="0.5" stroke-opacity="0.2"
+        transform="rotate(-30, ${x}, 0)" letter-spacing="2"
+      >${TEXTO_MARCA}</text>
+    `);
+  }
+
+  const svg = Buffer.from(`
+    <svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
+      ${svgTextos.join('')}
+    </svg>
+  `);
+
+  await sharp(caminhoImg)
+    .composite([{ input: svg, gravity: 'center' }])
+    .jpeg({ quality: 82 })
+    .toFile(caminhoImg + '.tmp');
+
+  fs.renameSync(caminhoImg + '.tmp', caminhoImg);
+}
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -98,15 +138,19 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
 
-app.post('/api/admin/upload', authMiddleware, upload.single('foto'), (req, res) => {
+app.post('/api/admin/upload', authMiddleware, upload.single('foto'), async (req, res) => {
   try {
     const { nome, preco, tipo, categoria } = req.body;
     const arquivo = req.file.filename;
 
-    // Copia para downloads também
-    const src  = path.join(__dirname, '../frontend/img', arquivo);
-    const dest = path.join(__dirname, '../downloads/artisticas', arquivo);
-    fs.copyFileSync(src, dest);
+    const srcImg  = path.join(__dirname, '../frontend/img', arquivo);
+    const destDl  = path.join(__dirname, '../downloads/artisticas', arquivo);
+
+    // 1. Salva original (sem marca) em downloads
+    fs.copyFileSync(srcImg, destDl);
+
+    // 2. Aplica marca d'água na cópia de frontend/img
+    await aplicarMarcaDagua(srcImg);
 
     const catalogo = carregarCatalogo();
     const id = `${tipo === 'artistica' ? 'adm' : 'adme'}-${Date.now()}`;
@@ -124,7 +168,7 @@ app.post('/api/admin/upload', authMiddleware, upload.single('foto'), (req, res) 
     catalogo.fotos.push(novaFoto);
     salvarCatalogo(catalogo);
 
-    console.log(`✅ Foto adicionada via admin: ${nome}`);
+    console.log(`✅ Foto adicionada via admin (com marca d'água): ${nome}`);
     res.json({ ok: true, foto: novaFoto });
   } catch(e) {
     console.error(e);
@@ -165,6 +209,66 @@ app.delete('/api/admin/fotos/:id', authMiddleware, (req, res) => {
 app.get('/api/catalogo', (req, res) => {
   const catalogo = carregarCatalogo();
   res.json(catalogo.fotos);
+});
+
+// ── Persistência de categorias e eventos dinâmicos ────────────
+const CATEGORIAS_PATH = path.join(__dirname, 'categorias.json');
+
+function carregarCategorias() {
+  try {
+    if (fs.existsSync(CATEGORIAS_PATH))
+      return JSON.parse(fs.readFileSync(CATEGORIAS_PATH, 'utf8'));
+  } catch(e) {}
+  return { eventos: [], artisticas: [] };
+}
+
+function salvarCategorias(c) {
+  try { fs.writeFileSync(CATEGORIAS_PATH, JSON.stringify(c, null, 2)); } catch(e) {}
+}
+
+// Listar categorias (público — usado pelo frontend)
+app.get('/api/categorias', (req, res) => {
+  res.json(carregarCategorias());
+});
+
+// Criar novo evento
+app.post('/api/admin/eventos', authMiddleware, (req, res) => {
+  const { id, nome, icone } = req.body;
+  if (!id || !nome) return res.status(400).json({ erro: 'id e nome são obrigatórios' });
+  const cats = carregarCategorias();
+  if (cats.eventos.some(e => e.id === id))
+    return res.status(409).json({ erro: 'ID de evento já existe' });
+  cats.eventos.push({ id, nome, icone: icone || '' });
+  salvarCategorias(cats);
+  res.json({ ok: true });
+});
+
+// Remover evento
+app.delete('/api/admin/eventos/:id', authMiddleware, (req, res) => {
+  const cats = carregarCategorias();
+  cats.eventos = cats.eventos.filter(e => e.id !== req.params.id);
+  salvarCategorias(cats);
+  res.json({ ok: true });
+});
+
+// Criar nova categoria artística
+app.post('/api/admin/artisticas', authMiddleware, (req, res) => {
+  const { id, nome, icone } = req.body;
+  if (!id || !nome) return res.status(400).json({ erro: 'id e nome são obrigatórios' });
+  const cats = carregarCategorias();
+  if (cats.artisticas.some(c => c.id === id))
+    return res.status(409).json({ erro: 'ID de categoria já existe' });
+  cats.artisticas.push({ id, nome, icone: icone || '' });
+  salvarCategorias(cats);
+  res.json({ ok: true });
+});
+
+// Remover categoria artística
+app.delete('/api/admin/artisticas/:id', authMiddleware, (req, res) => {
+  const cats = carregarCategorias();
+  cats.artisticas = cats.artisticas.filter(c => c.id !== req.params.id);
+  salvarCategorias(cats);
+  res.json({ ok: true });
 });
 
 // ── POST /api/criar-pix ──────────────────────────────────────

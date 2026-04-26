@@ -329,14 +329,30 @@ function fecharTudo() { fecharCarrinho(); fecharPix(); }
 // ── Inicia ────────────────────────────────────────────────────
 init();
 
-// ── Carrega fotos adicionadas via painel admin ────────────────
-// Adicione esta função e chame carregarFotosDinamicas() dentro de init()
-
+// ── Carrega categorias/eventos dinâmicos + fotos do admin ─────
 async function carregarFotosDinamicas() {
   try {
+    // 1. Carrega categorias e eventos criados no painel admin
+    const rCats = await fetch('/api/categorias');
+    if (rCats.ok) {
+      const { eventos: evsDin, artisticas: artsDin } = await rCats.json();
+
+      evsDin.forEach(ev => {
+        if (!EVENTOS.some(e => e.id === ev.id)) {
+          EVENTOS.push({ ...ev, fotos: [] });
+        }
+      });
+
+      artsDin.forEach(cat => {
+        if (!CATEGORIAS_ARTISTICAS.some(c => c.id === cat.id)) {
+          CATEGORIAS_ARTISTICAS.push({ ...cat, fotos: [] });
+        }
+      });
+    }
+
+    // 2. Carrega fotos adicionadas via painel admin
     const r = await fetch('/api/catalogo');
     const fotos = await r.json();
-    if (!fotos.length) return;
 
     fotos.forEach(foto => {
       if (foto.categoria === 'artistica') {
@@ -357,6 +373,6 @@ async function carregarFotosDinamicas() {
     renderizarAbas();
     renderizarGrade();
   } catch(e) {
-    console.warn('Fotos dinâmicas não carregadas:', e.message);
+    console.warn('Dados dinâmicos não carregados:', e.message);
   }
 }
