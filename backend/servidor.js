@@ -16,6 +16,8 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// ── Upload para o Cloudinary ──────────────────────────────────
+// Sobe o original e retorna a URL com marca d'água via transformação do Cloudinary
 function uploadParaCloudinary(buffer, publicId, pasta) {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
@@ -26,21 +28,47 @@ function uploadParaCloudinary(buffer, publicId, pasta) {
   });
 }
 
+// Gera URL do Cloudinary com marca d'água aplicada via transformação
 function urlComMarcaDagua(publicIdCompleto) {
   return cloudinary.url(publicIdCompleto, {
     transformation: [
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 20,  y: 40  },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 220, y: 40  },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 420, y: 40  },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 20,  y: 200 },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 220, y: 200 },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 420, y: 200 },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 20,  y: 380 },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 220, y: 380 },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 420, y: 380 },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 20,  y: 560 },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 220, y: 560 },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 420, y: 560 },
+      // Repete o texto em diagonal cobrindo toda a imagem
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 20, y: 40 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 220, y: 40 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 420, y: 40 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 20, y: 200 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 220, y: 200 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 420, y: 200 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 20, y: 380 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 220, y: 380 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 420, y: 380 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 20, y: 560 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 220, y: 560 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 420, y: 560 },
     ],
     secure: true,
   });
@@ -53,43 +81,44 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, '../frontend')));
 
+// ── Servir página admin ──────────────────────────────────────
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/admin.html'));
 });
 
-// ── Helpers de persistência ──────────────────────────────────
-function lerJSON(arquivo, padrao) {
+// ── Persistência de pagamentos ───────────────────────────────
+const PAGAMENTOS_PATH = path.join(__dirname, 'pagamentos.json');
+
+function carregarPagamentos() {
   try {
-    if (fs.existsSync(arquivo)) return JSON.parse(fs.readFileSync(arquivo, 'utf8'));
+    if (fs.existsSync(PAGAMENTOS_PATH))
+      return JSON.parse(fs.readFileSync(PAGAMENTOS_PATH, 'utf8'));
+  } catch (e) {}
+  return {};
+}
+
+function salvarPagamentos(p) {
+  try { fs.writeFileSync(PAGAMENTOS_PATH, JSON.stringify(p, null, 2)); } catch(e) {}
+}
+
+const pagamentos = carregarPagamentos();
+
+// ── Persistência do catálogo ─────────────────────────────────
+const CATALOGO_PATH = path.join(__dirname, 'catalogo.json');
+
+function carregarCatalogo() {
+  try {
+    if (fs.existsSync(CATALOGO_PATH))
+      return JSON.parse(fs.readFileSync(CATALOGO_PATH, 'utf8'));
   } catch(e) {}
-  return padrao;
+  return { fotos: [] };
 }
 
-function salvarJSON(arquivo, dados) {
-  try { fs.writeFileSync(arquivo, JSON.stringify(dados, null, 2)); } catch(e) {}
+function salvarCatalogo(c) {
+  try { fs.writeFileSync(CATALOGO_PATH, JSON.stringify(c, null, 2)); } catch(e) {}
 }
 
-const PAGAMENTOS_PATH  = path.join(__dirname, 'pagamentos.json');
-const CATALOGO_PATH    = path.join(__dirname, 'catalogo.json');
-const ESTRUTURA_PATH   = path.join(__dirname, 'estrutura.json');
-
-const pagamentos = lerJSON(PAGAMENTOS_PATH, {});
-
-// Estrutura padrão (espelho do produto.js)
-const estruturaPadrao = {
-  eventos: [],
-  categorias: [
-    { id: 'paisagens',   nome: 'Paisagens'    },
-    { id: 'retratos',    nome: 'Retratos'     },
-    { id: 'animais',     nome: 'Animais'      },
-    { id: 'luar',        nome: 'Luar'         },
-    { id: 'natureza',    nome: 'Natureza'     },
-    { id: 'serra',       nome: 'Serra Gaúcha' },
-    { id: 'arquitetura', nome: 'Arquitetura'  },
-  ],
-};
-
-// ── Auth ─────────────────────────────────────────────────────
+// ── Admin: autenticação ──────────────────────────────────────
 const ADMIN_SENHA = process.env.ADMIN_SENHA || 'guilherme2025';
 const tokens = new Set();
 
@@ -100,7 +129,8 @@ function authMiddleware(req, res, next) {
 }
 
 app.post('/api/admin/login', (req, res) => {
-  if (req.body.senha === ADMIN_SENHA) {
+  const { senha } = req.body;
+  if (senha === ADMIN_SENHA) {
     const token = crypto.randomBytes(32).toString('hex');
     tokens.add(token);
     return res.json({ token });
@@ -108,9 +138,12 @@ app.post('/api/admin/login', (req, res) => {
   res.status(401).json({ erro: 'Senha incorreta' });
 });
 
-app.get('/api/admin/verificar', authMiddleware, (req, res) => res.json({ ok: true }));
+app.get('/api/admin/verificar', authMiddleware, (req, res) => {
+  res.json({ ok: true });
+});
 
-// ── Upload ───────────────────────────────────────────────────
+// ── Admin: upload de foto ─────────────────────────────────────
+// Multer usa memória (sem gravar no disco) — Cloudinary cuida do armazenamento
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
 app.post('/api/admin/upload', authMiddleware, upload.single('foto'), async (req, res) => {
@@ -119,29 +152,39 @@ app.post('/api/admin/upload', authMiddleware, upload.single('foto'), async (req,
 
     const slug = nome.toLowerCase()
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
 
     const publicId = `${slug}-${Date.now()}`;
+    const bufferOriginal = req.file.buffer;
 
+    // Sobe apenas o original — marca d'água é aplicada via URL do Cloudinary
     const resultOriginal = await uploadParaCloudinary(
-      req.file.buffer, publicId, 'guilherme-fialho/originais'
+      bufferOriginal,
+      publicId,
+      'guilherme-fialho/originais'
     );
 
+    // URL com marca d'água gerada pelo Cloudinary (sem processar no servidor)
     const previewUrl = urlComMarcaDagua(`guilherme-fialho/originais/${publicId}`);
 
+    const id = `${tipo === 'artistica' ? 'adm' : 'adme'}-${Date.now()}`;
+
     const novaFoto = {
-      id: `adm-${Date.now()}`,
-      categoria: tipo, nome,
+      id,
+      categoria: tipo,
+      nome,
       preco: parseFloat(preco),
-      preview: previewUrl,
-      urlOriginal: resultOriginal.secure_url,
-      publicId, arquivo: publicId,
+      preview: previewUrl,                      // URL com marca d'água
+      urlOriginal: resultOriginal.secure_url,   // URL original para download
+      publicId,
+      arquivo: publicId,
       ...(tipo === 'artistica' ? { categoriaArtId: categoria } : { eventoId: categoria }),
     };
 
-    const catalogo = lerJSON(CATALOGO_PATH, { fotos: [] });
+    const catalogo = carregarCatalogo();
     catalogo.fotos.push(novaFoto);
-    salvarJSON(CATALOGO_PATH, catalogo);
+    salvarCatalogo(catalogo);
 
     console.log(`✅ Foto enviada ao Cloudinary: ${nome}`);
     res.json({ ok: true, foto: novaFoto });
@@ -151,26 +194,34 @@ app.post('/api/admin/upload', authMiddleware, upload.single('foto'), async (req,
   }
 });
 
-// ── Admin: fotos ─────────────────────────────────────────────
+// ── Admin: listar fotos do catálogo dinâmico ─────────────────
 app.get('/api/admin/fotos', authMiddleware, (req, res) => {
   const { categoria } = req.query;
-  let fotos = lerJSON(CATALOGO_PATH, { fotos: [] }).fotos;
-  if (categoria) fotos = fotos.filter(f =>
-    f.categoriaArtId === categoria || f.eventoId === categoria || f.categoria === categoria
-  );
+  const catalogo = carregarCatalogo();
+  let fotos = catalogo.fotos;
+  if (categoria) {
+    fotos = fotos.filter(f =>
+      f.categoriaArtId === categoria || f.eventoId === categoria || f.categoria === categoria
+    );
+  }
   res.json(fotos);
 });
 
+// ── Admin: remover foto ──────────────────────────────────────
 app.delete('/api/admin/fotos/:id', authMiddleware, async (req, res) => {
-  const catalogo = lerJSON(CATALOGO_PATH, { fotos: [] });
+  const catalogo = carregarCatalogo();
   const foto = catalogo.fotos.find(f => f.id === req.params.id);
   if (!foto) return res.status(404).json({ erro: 'Foto não encontrada' });
 
   catalogo.fotos = catalogo.fotos.filter(f => f.id !== req.params.id);
-  salvarJSON(CATALOGO_PATH, catalogo);
+  salvarCatalogo(catalogo);
 
+  // Remove do Cloudinary (preview e original)
   if (foto.publicId) {
-    try { await cloudinary.uploader.destroy(`guilherme-fialho/originais/${foto.publicId}`); } catch(e) {}
+    try {
+      await cloudinary.uploader.destroy(`guilherme-fialho/preview/${foto.publicId}`);
+      await cloudinary.uploader.destroy(`guilherme-fialho/originais/${foto.publicId}`);
+    } catch(e) { console.warn('Erro ao remover do Cloudinary:', e.message); }
   }
 
   res.json({ ok: true });
@@ -178,82 +229,86 @@ app.delete('/api/admin/fotos/:id', authMiddleware, async (req, res) => {
 
 // ── Catálogo público ─────────────────────────────────────────
 app.get('/api/catalogo', (req, res) => {
-  res.json(lerJSON(CATALOGO_PATH, { fotos: [] }).fotos);
+  const catalogo = carregarCatalogo();
+  res.json(catalogo.fotos);
 });
 
-// ── Estrutura pública (eventos + categorias) ─────────────────
-app.get('/api/estrutura', (req, res) => {
-  res.json(lerJSON(ESTRUTURA_PATH, estruturaPadrao));
-});
+// ── Persistência de categorias e eventos dinâmicos ────────────
+const CATEGORIAS_PATH = path.join(__dirname, 'categorias.json');
 
-// ── Admin: eventos ───────────────────────────────────────────
-app.get('/api/admin/eventos', authMiddleware, (req, res) => {
-  res.json(lerJSON(ESTRUTURA_PATH, estruturaPadrao).eventos);
+function carregarCategorias() {
+  try {
+    if (fs.existsSync(CATEGORIAS_PATH))
+      return JSON.parse(fs.readFileSync(CATEGORIAS_PATH, 'utf8'));
+  } catch(e) {}
+  return { eventos: [], artisticas: [] };
+}
+
+function salvarCategorias(c) {
+  try { fs.writeFileSync(CATEGORIAS_PATH, JSON.stringify(c, null, 2)); } catch(e) {}
+}
+
+app.get('/api/categorias', (req, res) => {
+  res.json(carregarCategorias());
 });
 
 app.post('/api/admin/eventos', authMiddleware, (req, res) => {
-  const { nome } = req.body;
-  if (!nome) return res.status(400).json({ erro: 'Nome obrigatório' });
-  const estrutura = lerJSON(ESTRUTURA_PATH, estruturaPadrao);
-  const id = nome.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  if (estrutura.eventos.some(e => e.id === id))
-    return res.status(400).json({ erro: 'Evento já existe' });
-  estrutura.eventos.push({ id, nome });
-  salvarJSON(ESTRUTURA_PATH, estrutura);
-  res.json({ ok: true, id, nome });
+  const { id, nome, icone } = req.body;
+  if (!id || !nome) return res.status(400).json({ erro: 'id e nome são obrigatórios' });
+  const cats = carregarCategorias();
+  if (cats.eventos.some(e => e.id === id))
+    return res.status(409).json({ erro: 'ID de evento já existe' });
+  cats.eventos.push({ id, nome, icone: icone || '' });
+  salvarCategorias(cats);
+  res.json({ ok: true });
 });
 
 app.delete('/api/admin/eventos/:id', authMiddleware, (req, res) => {
-  const estrutura = lerJSON(ESTRUTURA_PATH, estruturaPadrao);
-  estrutura.eventos = estrutura.eventos.filter(e => e.id !== req.params.id);
-  salvarJSON(ESTRUTURA_PATH, estrutura);
+  const cats = carregarCategorias();
+  cats.eventos = cats.eventos.filter(e => e.id !== req.params.id);
+  salvarCategorias(cats);
   res.json({ ok: true });
 });
 
-// ── Admin: categorias ────────────────────────────────────────
-app.get('/api/admin/categorias', authMiddleware, (req, res) => {
-  res.json(lerJSON(ESTRUTURA_PATH, estruturaPadrao).categorias);
-});
-
-app.post('/api/admin/categorias', authMiddleware, (req, res) => {
-  const { nome } = req.body;
-  if (!nome) return res.status(400).json({ erro: 'Nome obrigatório' });
-  const estrutura = lerJSON(ESTRUTURA_PATH, estruturaPadrao);
-  const id = nome.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  if (estrutura.categorias.some(c => c.id === id))
-    return res.status(400).json({ erro: 'Categoria já existe' });
-  estrutura.categorias.push({ id, nome });
-  salvarJSON(ESTRUTURA_PATH, estrutura);
-  res.json({ ok: true, id, nome });
-});
-
-app.delete('/api/admin/categorias/:id', authMiddleware, (req, res) => {
-  const estrutura = lerJSON(ESTRUTURA_PATH, estruturaPadrao);
-  estrutura.categorias = estrutura.categorias.filter(c => c.id !== req.params.id);
-  salvarJSON(ESTRUTURA_PATH, estrutura);
+app.post('/api/admin/artisticas', authMiddleware, (req, res) => {
+  const { id, nome, icone } = req.body;
+  if (!id || !nome) return res.status(400).json({ erro: 'id e nome são obrigatórios' });
+  const cats = carregarCategorias();
+  if (cats.artisticas.some(c => c.id === id))
+    return res.status(409).json({ erro: 'ID de categoria já existe' });
+  cats.artisticas.push({ id, nome, icone: icone || '' });
+  salvarCategorias(cats);
   res.json({ ok: true });
 });
 
-// ── Pix ──────────────────────────────────────────────────────
+app.delete('/api/admin/artisticas/:id', authMiddleware, (req, res) => {
+  const cats = carregarCategorias();
+  cats.artisticas = cats.artisticas.filter(c => c.id !== req.params.id);
+  salvarCategorias(cats);
+  res.json({ ok: true });
+});
+
+// ── POST /api/criar-pix ──────────────────────────────────────
 app.post('/api/criar-pix', async (req, res) => {
   const { itens, total, emailComprador } = req.body;
   if (!itens || !emailComprador || !total)
     return res.status(400).json({ erro: 'itens, total e emailComprador são obrigatórios' });
+
   try {
-    const descricao = itens.length === 1 ? itens[0].nome : `${itens.length} fotos - Guilherme Fialho`;
+    const descricao = itens.length === 1
+      ? itens[0].nome
+      : `${itens.length} fotos - Guilherme Fialho`;
+
     const cobranca = await criarCobrancaPix({ valor: total, descricao, emailComprador });
     pagamentos[cobranca.id] = { itens, emailComprador, status: 'pending' };
-    salvarJSON(PAGAMENTOS_PATH, pagamentos);
+    salvarPagamentos(pagamentos);
     res.json(cobranca);
   } catch(erro) {
     res.status(500).json({ erro: erro.message });
   }
 });
 
+// ── GET /api/status/:id ──────────────────────────────────────
 app.get('/api/status/:id', async (req, res) => {
   try {
     const dados = await consultarPagamento(req.params.id);
@@ -262,7 +317,7 @@ app.get('/api/status/:id', async (req, res) => {
       pag.status = 'approved';
       if (!pag.tokenDownload) {
         pag.tokenDownload = crypto.randomBytes(32).toString('hex');
-        salvarJSON(PAGAMENTOS_PATH, pagamentos);
+        salvarPagamentos(pagamentos);
       }
       return res.json({ ...dados, linkDownload: `/download/${pag.tokenDownload}` });
     }
@@ -272,16 +327,24 @@ app.get('/api/status/:id', async (req, res) => {
   }
 });
 
+// ── GET /download/:token ─────────────────────────────────────
+// Para fotos do Cloudinary, redireciona para a URL original
+// Para fotos antigas (disco), mantém compatibilidade
 app.get('/download/:token', async (req, res) => {
   const pag = Object.values(pagamentos).find(
     p => p.tokenDownload === req.params.token && p.status === 'approved'
   );
   if (!pag) return res.status(403).send('Link inválido ou expirado.');
 
+  // Suporta múltiplas fotos — envia a primeira (ou adapte para zip futuramente)
   const item = pag.itens[0];
 
-  if (item.urlOriginal) return res.redirect(item.urlOriginal);
+  // Se a foto tem URL do Cloudinary, redireciona para o original
+  if (item.urlOriginal) {
+    return res.redirect(item.urlOriginal);
+  }
 
+  // Fallback para fotos antigas no disco
   const caminhos = [
     path.join(__dirname, '../downloads/artisticas', item.arquivo),
     path.join(__dirname, '../downloads', item.arquivo),
@@ -291,6 +354,7 @@ app.get('/download/:token', async (req, res) => {
   res.download(caminho);
 });
 
+// ── POST /api/webhook ────────────────────────────────────────
 app.post('/api/webhook', async (req, res) => {
   const { type, data } = req.body;
   if (type === 'payment') {
@@ -298,14 +362,17 @@ app.post('/api/webhook', async (req, res) => {
       const pag = await consultarPagamento(data.id);
       if (pag.status === 'approved' && pagamentos[data.id]) {
         pagamentos[data.id].status = 'approved';
-        salvarJSON(PAGAMENTOS_PATH, pagamentos);
+        salvarPagamentos(pagamentos);
       }
     } catch(e) {}
   }
   res.sendStatus(200);
 });
 
-app.post('/api/reconhecimento', (req, res) => res.json({ fotosEncontradas: [] }));
+// ── Rota de reconhecimento facial (desativada) ───────────────
+app.post('/api/reconhecimento', (req, res) => {
+  res.json({ fotosEncontradas: [] });
+});
 
 app.listen(PORT, () => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
