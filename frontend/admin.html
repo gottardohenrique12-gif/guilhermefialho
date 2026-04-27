@@ -9,17 +9,19 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0a0a0a;
-      --surface: #111111;
-      --border: #222222;
-      --accent: #c9a84c;
-      --accent-dim: rgba(201,168,76,0.15);
-      --text: #e8e8e8;
-      --muted: #666;
-      --danger: #e05555;
-      --success: #4caf7d;
-      --mono: 'DM Mono', monospace;
-      --sans: 'DM Sans', sans-serif;
+      --bg:         #f5f4f1;
+      --surface:    #ffffff;
+      --surface-2:  #f0ede8;
+      --border:     #ddd9d3;
+      --border-2:   #c8c4be;
+      --accent:     #8c7355;
+      --accent-dim: rgba(140,115,85,0.08);
+      --text:       #1a1916;
+      --muted:      #8a8680;
+      --danger:     #b84040;
+      --success:    #3a7a58;
+      --mono:       'DM Mono', monospace;
+      --sans:       'DM Sans', sans-serif;
     }
 
     body {
@@ -29,7 +31,7 @@
       min-height: 100vh;
     }
 
-    /* ── LOGIN ── */
+    /* LOGIN */
     #tela-login {
       display: flex;
       align-items: center;
@@ -44,43 +46,45 @@
       background: var(--surface);
       border: 1px solid var(--border);
       padding: 3rem 2.5rem;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
     }
 
     .login-logo {
       font-family: var(--mono);
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--accent);
-      letter-spacing: 0.15em;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
       margin-bottom: 2.5rem;
     }
 
     .login-title {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       font-weight: 300;
-      margin-bottom: 0.5rem;
+      color: var(--text);
+      margin-bottom: 0.4rem;
     }
 
     .login-sub {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       color: var(--muted);
       margin-bottom: 2rem;
     }
 
-    .campo {
-      margin-bottom: 1rem;
-    }
+    /* CAMPOS */
+    .campo { margin-bottom: 1rem; }
 
     .campo label {
       display: block;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-family: var(--mono);
       color: var(--muted);
       letter-spacing: 0.08em;
       margin-bottom: 0.4rem;
     }
 
-    .campo input, .campo select {
+    .campo input,
+    .campo select {
       width: 100%;
       background: var(--bg);
       border: 1px solid var(--border);
@@ -90,29 +94,74 @@
       font-size: 0.9rem;
       outline: none;
       transition: border-color 0.2s;
+      border-radius: 0;
+      appearance: none;
     }
 
-    .campo input:focus, .campo select:focus {
-      border-color: var(--accent);
-    }
+    .campo input:focus,
+    .campo select:focus { border-color: var(--accent); }
 
+    /* BOTÕES */
     .btn-primary {
       width: 100%;
       background: var(--accent);
-      color: #000;
+      color: #fff;
       border: none;
       padding: 0.85rem;
       font-family: var(--mono);
-      font-size: 0.8rem;
-      letter-spacing: 0.1em;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       cursor: pointer;
       margin-top: 0.5rem;
       transition: opacity 0.2s;
     }
 
-    .btn-primary:hover { opacity: 0.85; }
+    .btn-primary:hover   { opacity: 0.85; }
     .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-logout {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.4rem 1rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+    .btn-add {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.1rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.2s;
+    }
+
+    .btn-add:hover { opacity: 0.85; }
+
+    .btn-del {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--danger);
+      padding: 0.3rem 0.7rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-del:hover { background: rgba(184,64,64,0.06); border-color: var(--danger); }
 
     .erro-login {
       color: var(--danger);
@@ -121,7 +170,7 @@
       display: none;
     }
 
-    /* ── PAINEL ── */
+    /* PAINEL */
     #painel { display: none; }
 
     .topbar {
@@ -135,35 +184,21 @@
 
     .topbar-logo {
       font-family: var(--mono);
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--accent);
-      letter-spacing: 0.15em;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
     }
 
-    .btn-logout {
-      background: none;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 0.4rem 1rem;
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      letter-spacing: 0.08em;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
-
     .painel-body {
-      max-width: 960px;
+      max-width: 980px;
       margin: 0 auto;
       padding: 2.5rem 2rem;
     }
 
+    /* TABS */
     .tabs {
       display: flex;
-      gap: 0;
       border-bottom: 1px solid var(--border);
       margin-bottom: 2.5rem;
     }
@@ -175,41 +210,51 @@
       color: var(--muted);
       padding: 0.75rem 1.5rem;
       font-family: var(--mono);
-      font-size: 0.75rem;
-      letter-spacing: 0.08em;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       cursor: pointer;
       margin-bottom: -1px;
       transition: all 0.2s;
     }
 
-    .tab-btn.ativo {
-      color: var(--accent);
-      border-bottom-color: var(--accent);
-    }
+    .tab-btn.ativo { color: var(--accent); border-bottom-color: var(--accent); }
 
     .tab-content { display: none; }
     .tab-content.ativo { display: block; }
 
-    /* ── UPLOAD ── */
+    .section-title {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* UPLOAD */
     .upload-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 2rem;
+      gap: 2.5rem;
     }
 
     @media (max-width: 640px) { .upload-grid { grid-template-columns: 1fr; } }
 
     .drop-zone {
-      border: 2px dashed var(--border);
+      border: 1.5px dashed var(--border-2);
       padding: 3rem 2rem;
       text-align: center;
       cursor: pointer;
       transition: all 0.2s;
       position: relative;
+      background: var(--surface);
     }
 
-    .drop-zone:hover, .drop-zone.dragover {
+    .drop-zone:hover,
+    .drop-zone.dragover {
       border-color: var(--accent);
       background: var(--accent-dim);
     }
@@ -221,12 +266,22 @@
       cursor: pointer;
     }
 
-    .drop-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+    .drop-icon {
+      width: 36px;
+      height: 36px;
+      margin: 0 auto 0.75rem;
+      border: 1.5px solid var(--border-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .drop-icon svg { width: 18px; height: 18px; stroke: var(--muted); fill: none; stroke-width: 1.5; }
 
     .drop-text {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       color: var(--muted);
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
     .preview-img {
@@ -235,42 +290,25 @@
       object-fit: cover;
       display: none;
       margin-top: 1rem;
+      border: 1px solid var(--border);
     }
 
-    .form-section {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
+    .form-section { display: flex; flex-direction: column; gap: 1rem; }
 
-    .section-title {
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      color: var(--accent);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      margin-bottom: 1.5rem;
-      padding-bottom: 0.75rem;
-      border-bottom: 1px solid var(--border);
-    }
-
+    /* MSGS */
     .msg {
-      padding: 0.75rem 1rem;
-      font-size: 0.85rem;
+      padding: 0.7rem 1rem;
+      font-size: 0.82rem;
       margin-top: 1rem;
       display: none;
+      font-family: var(--mono);
     }
 
-    .msg.sucesso { background: rgba(76,175,125,0.1); border: 1px solid var(--success); color: var(--success); }
-    .msg.erro    { background: rgba(224,85,85,0.1);  border: 1px solid var(--danger);  color: var(--danger);  }
+    .msg.sucesso { background: rgba(58,122,88,0.08); border: 1px solid var(--success); color: var(--success); }
+    .msg.erro    { background: rgba(184,64,64,0.08); border: 1px solid var(--danger);  color: var(--danger);  }
 
-    /* ── LISTAGEM ── */
-    .filtro-barra {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
-    }
+    /* FOTOS */
+    .filtro-barra { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
 
     .filtro-barra select {
       background: var(--surface);
@@ -280,11 +318,12 @@
       font-family: var(--sans);
       font-size: 0.85rem;
       outline: none;
+      appearance: none;
     }
 
     .fotos-lista {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
       gap: 1rem;
     }
 
@@ -301,24 +340,22 @@
       display: block;
     }
 
-    .foto-card-info {
-      padding: 0.75rem;
-    }
+    .foto-card-info { padding: 0.75rem; }
 
     .foto-card-nome {
       font-size: 0.8rem;
       font-weight: 500;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.2rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .foto-card-meta {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       color: var(--muted);
       font-family: var(--mono);
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.6rem;
     }
 
     .btn-remover-foto {
@@ -326,162 +363,116 @@
       border: 1px solid var(--border);
       color: var(--danger);
       padding: 0.3rem 0.75rem;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-family: var(--mono);
       cursor: pointer;
       width: 100%;
       transition: all 0.2s;
     }
 
-    .btn-remover-foto:hover { background: rgba(224,85,85,0.1); }
+    .btn-remover-foto:hover { background: rgba(184,64,64,0.06); }
 
     .sem-fotos {
       color: var(--muted);
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       text-align: center;
       padding: 3rem;
       grid-column: 1/-1;
+      font-family: var(--mono);
     }
 
     .loading {
       color: var(--muted);
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-family: var(--mono);
       text-align: center;
       padding: 2rem;
     }
 
-    /* ── CATEGORIAS ── */
-    .cat-grid {
+    /* ESTRUTURA */
+    .estrutura-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 2.5rem;
     }
 
-    @media (max-width: 640px) { .cat-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) { .estrutura-grid { grid-template-columns: 1fr; } }
 
-    .cat-bloco h3 {
+    .estrutura-col h3 {
       font-family: var(--mono);
-      font-size: 0.7rem;
-      color: var(--accent);
-      letter-spacing: 0.12em;
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 0.14em;
       text-transform: uppercase;
       margin-bottom: 1.25rem;
       padding-bottom: 0.6rem;
       border-bottom: 1px solid var(--border);
     }
 
-    .cat-form {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .cat-form .linha {
+    .novo-form {
       display: flex;
       gap: 0.5rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
     }
 
-    .cat-form input {
+    .novo-form input {
       flex: 1;
-      background: var(--bg);
+      min-width: 100px;
+      background: var(--surface);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 0.6rem 0.9rem;
+      padding: 0.6rem 0.8rem;
       font-family: var(--sans);
       font-size: 0.85rem;
       outline: none;
       transition: border-color 0.2s;
     }
 
-    .cat-form input:focus { border-color: var(--accent); }
+    .novo-form input:focus { border-color: var(--accent); }
 
-    .cat-form input.icone { max-width: 64px; text-align: center; }
+    .lista-itens { display: flex; flex-direction: column; gap: 0.4rem; }
 
-    .btn-add-cat {
-      background: var(--accent);
-      color: #000;
-      border: none;
-      padding: 0.6rem 1.2rem;
-      font-family: var(--mono);
-      font-size: 0.72rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: opacity 0.2s;
-    }
-
-    .btn-add-cat:hover { opacity: 0.85; }
-
-    .cat-lista {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .cat-item {
+    .item-linha {
       display: flex;
       align-items: center;
       justify-content: space-between;
       background: var(--surface);
       border: 1px solid var(--border);
-      padding: 0.6rem 0.9rem;
-      font-size: 0.85rem;
+      padding: 0.6rem 0.8rem;
     }
 
-    .cat-item-esq {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
+    .item-nome { font-size: 0.85rem; }
 
-    .cat-item-icone { font-size: 1rem; }
-
-    .cat-item-id {
-      font-family: var(--mono);
-      font-size: 0.7rem;
+    .item-id {
+      font-size: 0.68rem;
       color: var(--muted);
-      margin-left: 0.25rem;
-    }
-
-    .btn-del-cat {
-      background: none;
-      border: none;
-      color: var(--danger);
-      cursor: pointer;
-      font-size: 0.8rem;
-      padding: 0.2rem 0.5rem;
-      opacity: 0.6;
-      transition: opacity 0.2s;
-    }
-
-    .btn-del-cat:hover { opacity: 1; }
-
-    .cat-vazio {
-      color: var(--muted);
-      font-size: 0.8rem;
       font-family: var(--mono);
-      padding: 1rem 0;
+      margin-left: 0.5rem;
+    }
+
+    .item-fixo {
+      font-size: 0.65rem;
+      color: var(--border-2);
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
   </style>
 </head>
 <body>
 
-<!-- TELA DE LOGIN -->
+<!-- LOGIN -->
 <div id="tela-login">
   <div class="login-box">
     <div class="login-logo">GFS Fotografia</div>
-    <h1 class="login-title">Painel Admin</h1>
+    <h1 class="login-title">Painel de administração</h1>
     <p class="login-sub">Acesso restrito ao proprietário do site.</p>
-
     <div class="campo">
       <label>Senha</label>
       <input type="password" id="input-senha" placeholder="••••••••"
              onkeydown="if(event.key==='Enter') fazerLogin()"/>
     </div>
-
     <button class="btn-primary" onclick="fazerLogin()">Entrar</button>
     <div class="erro-login" id="erro-login">Senha incorreta.</div>
   </div>
@@ -496,20 +487,22 @@
 
   <div class="painel-body">
     <div class="tabs">
-      <button class="tab-btn ativo" onclick="mudarTab('upload')">Adicionar Foto</button>
-      <button class="tab-btn" onclick="mudarTab('fotos')">Gerenciar Fotos</button>
-      <button class="tab-btn" onclick="mudarTab('categorias')">Categorias</button>
+      <button class="tab-btn ativo" onclick="mudarTab('upload')">Adicionar foto</button>
+      <button class="tab-btn"       onclick="mudarTab('fotos')">Gerenciar fotos</button>
+      <button class="tab-btn"       onclick="mudarTab('estrutura')">Eventos e categorias</button>
     </div>
 
-    <!-- TAB UPLOAD -->
+    <!-- UPLOAD -->
     <div class="tab-content ativo" id="tab-upload">
-      <div class="section-title">Nova Foto</div>
+      <div class="section-title">Nova foto</div>
       <div class="upload-grid">
         <div>
           <div class="drop-zone" id="drop-zone"
-               ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event)">
+               ondragover="dragOver(event)" ondragleave="dragLeave()" ondrop="drop(event)">
             <input type="file" id="input-foto" accept="image/*" onchange="selecionarArquivo(event)"/>
-            <div class="drop-icon">🖼️</div>
+            <div class="drop-icon">
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
             <div class="drop-text">Arraste a foto aqui<br/>ou clique para selecionar</div>
           </div>
           <img id="preview-img" class="preview-img" alt="Preview"/>
@@ -517,63 +510,40 @@
 
         <div class="form-section">
           <div class="campo">
-            <label>Nome da Foto</label>
+            <label>Nome da foto</label>
             <input type="text" id="input-nome" placeholder="Ex: Tucano-de-bico-verde"/>
           </div>
-
           <div class="campo">
-            <label>Preço (R$)</label>
+            <label>Preco (R$)</label>
             <input type="number" id="input-preco" placeholder="25.00" step="0.01" min="0"/>
           </div>
-
           <div class="campo">
             <label>Tipo</label>
             <select id="input-tipo" onchange="atualizarCategorias()">
-              <option value="artistica">Artística</option>
+              <option value="artistica">Artistica</option>
               <option value="evento">Evento</option>
             </select>
           </div>
-
           <div class="campo" id="campo-categoria-art">
-            <label>Categoria Artística</label>
-            <select id="input-categoria-art">
-              <option value="paisagens">Paisagens</option>
-              <option value="retratos">Retratos</option>
-              <option value="animais">Animais</option>
-              <option value="luar">Luar</option>
-              <option value="natureza">Natureza</option>
-              <option value="serra">Serra Gaúcha</option>
-              <option value="arquitetura">Arquitetura</option>
-            </select>
+            <label>Categoria artistica</label>
+            <select id="input-categoria-art"></select>
           </div>
-
           <div class="campo" id="campo-evento" style="display:none">
             <label>Evento</label>
-            <select id="input-evento">
-              <option value="">-- Selecione um evento --</option>
-            </select>
+            <select id="input-evento-sel"></select>
           </div>
-
-          <button class="btn-primary" onclick="enviarFoto()">Adicionar ao Catálogo</button>
+          <button class="btn-primary" onclick="enviarFoto()">Adicionar ao catalogo</button>
           <div class="msg" id="msg-upload"></div>
         </div>
       </div>
     </div>
 
-    <!-- TAB FOTOS -->
+    <!-- FOTOS -->
     <div class="tab-content" id="tab-fotos">
-      <div class="section-title">Fotos no Catálogo</div>
+      <div class="section-title">Fotos adicionadas pelo admin</div>
       <div class="filtro-barra">
         <select id="filtro-categoria" onchange="carregarFotos()">
-          <option value="">Todas as categorias</option>
-          <option value="paisagens">Paisagens</option>
-          <option value="retratos">Retratos</option>
-          <option value="animais">Animais</option>
-          <option value="luar">Luar</option>
-          <option value="natureza">Natureza</option>
-          <option value="serra">Serra Gaúcha</option>
-          <option value="arquitetura">Arquitetura</option>
-          <option value="evento">Eventos</option>
+          <option value="">Todas</option>
         </select>
       </div>
       <div class="fotos-lista" id="fotos-lista">
@@ -581,47 +551,29 @@
       </div>
     </div>
 
-    <!-- TAB CATEGORIAS -->
-    <div class="tab-content" id="tab-categorias">
-      <div class="section-title">Eventos e Categorias</div>
-      <div class="cat-grid">
+    <!-- ESTRUTURA -->
+    <div class="tab-content" id="tab-estrutura">
+      <div class="section-title">Eventos e categorias</div>
+      <div class="estrutura-grid">
 
-        <!-- EVENTOS -->
-        <div class="cat-bloco">
+        <div class="estrutura-col">
           <h3>Eventos</h3>
-          <div class="cat-form">
-            <div class="linha">
-              <input type="text" id="ev-icone" class="icone" placeholder="🏅" maxlength="4"/>
-              <input type="text" id="ev-nome" placeholder="Nome do evento (ex: Maratona 2025)"/>
-            </div>
-            <div class="linha">
-              <input type="text" id="ev-id" placeholder="ID único (ex: maratona-2025)"/>
-              <button class="btn-add-cat" onclick="criarEvento()">+ Criar</button>
-            </div>
+          <div class="novo-form">
+            <input type="text" id="novo-evento-nome" placeholder="Nome do evento"/>
+            <button class="btn-add" onclick="criarEvento()">Criar</button>
           </div>
           <div class="msg" id="msg-ev"></div>
-          <div class="cat-lista" id="lista-eventos">
-            <div class="cat-vazio">Carregando...</div>
-          </div>
+          <div class="lista-itens" id="lista-eventos"></div>
         </div>
 
-        <!-- CATEGORIAS ARTÍSTICAS -->
-        <div class="cat-bloco">
-          <h3>Categorias Artísticas</h3>
-          <div class="cat-form">
-            <div class="linha">
-              <input type="text" id="art-icone" class="icone" placeholder="🌿" maxlength="4"/>
-              <input type="text" id="art-nome" placeholder="Nome da categoria (ex: Retratos)"/>
-            </div>
-            <div class="linha">
-              <input type="text" id="art-id" placeholder="ID único (ex: retratos)"/>
-              <button class="btn-add-cat" onclick="criarCategoriaArt()">+ Criar</button>
-            </div>
+        <div class="estrutura-col">
+          <h3>Categorias artisticas</h3>
+          <div class="novo-form">
+            <input type="text" id="nova-cat-nome" placeholder="Nome da categoria"/>
+            <button class="btn-add" onclick="criarCategoria()">Criar</button>
           </div>
-          <div class="msg" id="msg-art"></div>
-          <div class="cat-lista" id="lista-artisticas">
-            <div class="cat-vazio">Carregando...</div>
-          </div>
+          <div class="msg" id="msg-cat"></div>
+          <div class="lista-itens" id="lista-categorias"></div>
         </div>
 
       </div>
@@ -631,21 +583,19 @@
 </div>
 
 <script>
-  const SENHA_HASH = null; // validado no servidor
   let token = sessionStorage.getItem('admin_token');
   let arquivoSelecionado = null;
+  let estrutura = { eventos: [], categorias: [] };
 
   // ── Login ──
   async function fazerLogin() {
-    const senha = document.getElementById('input-senha').value;
     const r = await fetch('/api/admin/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ senha })
+      body: JSON.stringify({ senha: document.getElementById('input-senha').value })
     });
     if (r.ok) {
-      const d = await r.json();
-      token = d.token;
+      token = (await r.json()).token;
       sessionStorage.setItem('admin_token', token);
       mostrarPainel();
     } else {
@@ -660,40 +610,133 @@
     document.getElementById('tela-login').style.display = 'flex';
   }
 
-  async function verificarToken() {
-    if (!token) return false;
-    const r = await fetch('/api/admin/verificar', {
-      headers: { 'Authorization': token }
-    });
-    return r.ok;
+  async function mostrarPainel() {
+    document.getElementById('tela-login').style.display = 'none';
+    document.getElementById('painel').style.display = 'block';
+    await carregarEstrutura();
+    carregarFotos();
   }
 
   // ── Tabs ──
   function mudarTab(tab) {
-    const tabs = ['upload', 'fotos', 'categorias'];
     document.querySelectorAll('.tab-btn').forEach((b, i) => {
-      b.classList.toggle('ativo', tabs[i] === tab);
+      b.classList.toggle('ativo', ['upload','fotos','estrutura'][i] === tab);
     });
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('ativo'));
     document.getElementById(`tab-${tab}`).classList.add('ativo');
     if (tab === 'fotos') carregarFotos();
-    if (tab === 'categorias') carregarCategorias();
+    if (tab === 'estrutura') renderizarEstrutura();
+  }
+
+  // ── Estrutura ──
+  async function carregarEstrutura() {
+    const r = await fetch('/api/estrutura');
+    estrutura = await r.json();
+    preencherSelects();
+    renderizarEstrutura();
+    preencherFiltro();
+  }
+
+  function preencherSelects() {
+    document.getElementById('input-categoria-art').innerHTML =
+      estrutura.categorias.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+    document.getElementById('input-evento-sel').innerHTML =
+      estrutura.eventos.length
+        ? estrutura.eventos.map(e => `<option value="${e.id}">${e.nome}</option>`).join('')
+        : '<option value="">Nenhum evento criado ainda</option>';
+  }
+
+  function preencherFiltro() {
+    document.getElementById('filtro-categoria').innerHTML =
+      '<option value="">Todas</option>' +
+      estrutura.categorias.map(c => `<option value="${c.id}">${c.nome}</option>`).join('') +
+      estrutura.eventos.map(e => `<option value="${e.id}">${e.nome}</option>`).join('');
+  }
+
+  function renderizarEstrutura() {
+    const FIXOS_CAT = ['paisagens','retratos','animais','luar','natureza','serra','arquitetura'];
+    const FIXOS_EV  = ['meia-maratona','triatlon'];
+
+    document.getElementById('lista-eventos').innerHTML =
+      estrutura.eventos.map(e => `
+        <div class="item-linha">
+          <div>
+            <span class="item-nome">${e.nome}</span>
+            <span class="item-id">${e.id}</span>
+          </div>
+          ${FIXOS_EV.includes(e.id)
+            ? '<span class="item-fixo">padrao</span>'
+            : `<button class="btn-del" onclick="deletarEvento('${e.id}')">Remover</button>`}
+        </div>`
+      ).join('') || '<div class="loading">Nenhum evento.</div>';
+
+    document.getElementById('lista-categorias').innerHTML =
+      estrutura.categorias.map(c => `
+        <div class="item-linha">
+          <div>
+            <span class="item-nome">${c.nome}</span>
+            <span class="item-id">${c.id}</span>
+          </div>
+          ${FIXOS_CAT.includes(c.id)
+            ? '<span class="item-fixo">padrao</span>'
+            : `<button class="btn-del" onclick="deletarCategoria('${c.id}')">Remover</button>`}
+        </div>`
+      ).join('') || '<div class="loading">Nenhuma categoria.</div>';
+  }
+
+  async function criarEvento() {
+    const nome = document.getElementById('novo-evento-nome').value.trim();
+    if (!nome) return mostrarMsg('ev', 'Informe o nome do evento.', 'erro');
+    const r = await fetch('/api/admin/eventos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': token },
+      body: JSON.stringify({ nome })
+    });
+    const d = await r.json();
+    if (r.ok) {
+      estrutura.eventos.push({ id: d.id, nome });
+      document.getElementById('novo-evento-nome').value = '';
+      preencherSelects(); preencherFiltro(); renderizarEstrutura();
+      mostrarMsg('ev', 'Evento criado.', 'sucesso');
+    } else { mostrarMsg('ev', d.erro || 'Erro.', 'erro'); }
+  }
+
+  async function deletarEvento(id) {
+    if (!confirm('Remover este evento?')) return;
+    await fetch(`/api/admin/eventos/${id}`, { method: 'DELETE', headers: { 'Authorization': token } });
+    estrutura.eventos = estrutura.eventos.filter(e => e.id !== id);
+    preencherSelects(); preencherFiltro(); renderizarEstrutura();
+  }
+
+  async function criarCategoria() {
+    const nome = document.getElementById('nova-cat-nome').value.trim();
+    if (!nome) return mostrarMsg('cat', 'Informe o nome da categoria.', 'erro');
+    const r = await fetch('/api/admin/categorias', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': token },
+      body: JSON.stringify({ nome })
+    });
+    const d = await r.json();
+    if (r.ok) {
+      estrutura.categorias.push({ id: d.id, nome });
+      document.getElementById('nova-cat-nome').value = '';
+      preencherSelects(); preencherFiltro(); renderizarEstrutura();
+      mostrarMsg('cat', 'Categoria criada.', 'sucesso');
+    } else { mostrarMsg('cat', d.erro || 'Erro.', 'erro'); }
+  }
+
+  async function deletarCategoria(id) {
+    if (!confirm('Remover esta categoria?')) return;
+    await fetch(`/api/admin/categorias/${id}`, { method: 'DELETE', headers: { 'Authorization': token } });
+    estrutura.categorias = estrutura.categorias.filter(c => c.id !== id);
+    preencherSelects(); preencherFiltro(); renderizarEstrutura();
   }
 
   // ── Upload ──
   function dragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('dragover'); }
   function dragLeave()  { document.getElementById('drop-zone').classList.remove('dragover'); }
-  function drop(e) {
-    e.preventDefault();
-    dragLeave();
-    const file = e.dataTransfer.files[0];
-    if (file) processarArquivo(file);
-  }
-
-  function selecionarArquivo(e) {
-    const file = e.target.files[0];
-    if (file) processarArquivo(file);
-  }
+  function drop(e) { e.preventDefault(); dragLeave(); const f = e.dataTransfer.files[0]; if (f) processarArquivo(f); }
+  function selecionarArquivo(e) { const f = e.target.files[0]; if (f) processarArquivo(f); }
 
   function processarArquivo(file) {
     arquivoSelecionado = file;
@@ -704,12 +747,9 @@
       img.style.display = 'block';
     };
     reader.readAsDataURL(file);
-
-    // Auto-preenche nome com base no arquivo
     if (!document.getElementById('input-nome').value) {
       const nome = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
-      document.getElementById('input-nome').value =
-        nome.charAt(0).toUpperCase() + nome.slice(1);
+      document.getElementById('input-nome').value = nome.charAt(0).toUpperCase() + nome.slice(1);
     }
   }
 
@@ -723,55 +763,44 @@
     const nome  = document.getElementById('input-nome').value.trim();
     const preco = parseFloat(document.getElementById('input-preco').value);
     const tipo  = document.getElementById('input-tipo').value;
-    const catArt = document.getElementById('input-categoria-art').value;
-    const evento = document.getElementById('input-evento').value.trim();
+    const cat   = tipo === 'artistica'
+      ? document.getElementById('input-categoria-art').value
+      : document.getElementById('input-evento-sel').value;
 
-    if (!arquivoSelecionado) return mostrarMsg('upload', 'Selecione uma foto.', 'erro');
-    if (!nome)               return mostrarMsg('upload', 'Informe o nome da foto.', 'erro');
-    if (!preco || preco <= 0) return mostrarMsg('upload', 'Informe um preço válido.', 'erro');
-    if (tipo === 'evento' && !evento) return mostrarMsg('upload', 'Selecione um evento.', 'erro');
+    if (!arquivoSelecionado)  return mostrarMsg('upload', 'Selecione uma foto.', 'erro');
+    if (!nome)                return mostrarMsg('upload', 'Informe o nome.', 'erro');
+    if (!preco || preco <= 0) return mostrarMsg('upload', 'Informe um preco valido.', 'erro');
 
     const btn = document.querySelector('#tab-upload .btn-primary');
-    btn.textContent = 'Enviando...';
-    btn.disabled = true;
+    btn.textContent = 'Enviando...'; btn.disabled = true;
 
     const form = new FormData();
     form.append('foto', arquivoSelecionado);
     form.append('nome', nome);
     form.append('preco', preco);
     form.append('tipo', tipo);
-    form.append('categoria', tipo === 'artistica' ? catArt : evento);
+    form.append('categoria', cat);
 
     try {
       const r = await fetch('/api/admin/upload', {
-        method: 'POST',
-        headers: { 'Authorization': token },
-        body: form
+        method: 'POST', headers: { 'Authorization': token }, body: form
       });
       const d = await r.json();
       if (r.ok) {
-        mostrarMsg('upload', '✅ Foto adicionada com sucesso!', 'sucesso');
+        mostrarMsg('upload', 'Foto adicionada com sucesso.', 'sucesso');
         arquivoSelecionado = null;
         document.getElementById('preview-img').style.display = 'none';
         document.getElementById('input-nome').value = '';
         document.getElementById('input-preco').value = '';
         document.getElementById('input-foto').value = '';
-      } else {
-        mostrarMsg('upload', '❌ ' + (d.erro || 'Erro ao enviar.'), 'erro');
-      }
-    } catch(e) {
-      mostrarMsg('upload', '❌ Erro de conexão.', 'erro');
-    } finally {
-      btn.textContent = 'Adicionar ao Catálogo';
-      btn.disabled = false;
-    }
+      } else { mostrarMsg('upload', d.erro || 'Erro ao enviar.', 'erro'); }
+    } catch(e) { mostrarMsg('upload', 'Erro de conexao.', 'erro'); }
+    finally { btn.textContent = 'Adicionar ao catalogo'; btn.disabled = false; }
   }
 
   function mostrarMsg(tab, texto, tipo) {
     const el = document.getElementById(`msg-${tab}`);
-    el.textContent = texto;
-    el.className = `msg ${tipo}`;
-    el.style.display = 'block';
+    el.textContent = texto; el.className = `msg ${tipo}`; el.style.display = 'block';
     setTimeout(() => el.style.display = 'none', 4000);
   }
 
@@ -780,206 +809,38 @@
     const lista = document.getElementById('fotos-lista');
     const filtro = document.getElementById('filtro-categoria').value;
     lista.innerHTML = '<div class="loading">Carregando...</div>';
-
     try {
-      const r = await fetch('/api/admin/fotos?categoria=' + filtro, {
-        headers: { 'Authorization': token }
-      });
+      const r = await fetch('/api/admin/fotos?categoria=' + filtro, { headers: { 'Authorization': token } });
       const fotos = await r.json();
-
       if (!fotos.length) {
-        lista.innerHTML = '<div class="sem-fotos">Nenhuma foto nesta categoria.</div>';
+        lista.innerHTML = '<div class="sem-fotos">Nenhuma foto adicionada pelo admin ainda.</div>';
         return;
       }
-
       lista.innerHTML = fotos.map(f => `
         <div class="foto-card">
           <img src="${f.preview}" alt="${f.nome}" loading="lazy"/>
           <div class="foto-card-info">
             <div class="foto-card-nome">${f.nome}</div>
-            <div class="foto-card-meta">R$ ${f.preco.toFixed(2).replace('.',',')} · ${f.categoriaArtId || f.eventoId || ''}</div>
+            <div class="foto-card-meta">R$ ${f.preco.toFixed(2).replace('.',',')} &middot; ${f.categoriaArtId || f.eventoId || ''}</div>
             <button class="btn-remover-foto" onclick="removerFoto('${f.id}')">Remover</button>
           </div>
-        </div>
-      `).join('');
-    } catch(e) {
-      lista.innerHTML = '<div class="sem-fotos">Erro ao carregar fotos.</div>';
-    }
+        </div>`
+      ).join('');
+    } catch(e) { lista.innerHTML = '<div class="sem-fotos">Erro ao carregar.</div>'; }
   }
 
   async function removerFoto(id) {
-    if (!confirm('Remover esta foto do catálogo?')) return;
-    const r = await fetch('/api/admin/fotos/' + id, {
-      method: 'DELETE',
-      headers: { 'Authorization': token }
-    });
+    if (!confirm('Remover esta foto?')) return;
+    const r = await fetch('/api/admin/fotos/' + id, { method: 'DELETE', headers: { 'Authorization': token } });
     if (r.ok) carregarFotos();
-    else alert('Erro ao remover foto.');
-  }
-
-  // ── Categorias ──
-  const CATS_FIXAS_ART = [
-    { id: 'paisagens', nome: 'Paisagens', icone: '' },
-    { id: 'animais',   nome: 'Animais',   icone: '' },
-    { id: 'luar',      nome: 'Luar',      icone: '' },
-    { id: 'natureza',  nome: 'Natureza',  icone: '' },
-    { id: 'serra',     nome: 'Serra Gaúcha', icone: '' },
-    { id: 'arquitetura', nome: 'Arquitetura', icone: '' },
-  ];
-  // Eventos são 100% dinâmicos — gerenciados pelo painel admin
-
-  async function carregarCategorias() {
-    try {
-      const r = await fetch('/api/categorias');
-      const { eventos, artisticas } = await r.json();
-      renderizarListaEventos('lista-eventos', eventos);
-      renderizarListaCat('lista-artisticas', CATS_FIXAS_ART, artisticas, 'art');
-      atualizarSelectsCategorias(artisticas, eventos);
-    } catch(e) {
-      document.getElementById('lista-eventos').innerHTML = '<div class="cat-vazio">Erro ao carregar.</div>';
-      document.getElementById('lista-artisticas').innerHTML = '<div class="cat-vazio">Erro ao carregar.</div>';
-    }
-  }
-
-  function renderizarListaEventos(containerId, eventos) {
-    const el = document.getElementById(containerId);
-    if (!eventos.length) {
-      el.innerHTML = '<div class="cat-vazio">Nenhum evento criado ainda.</div>';
-      return;
-    }
-    el.innerHTML = eventos.map(c => `
-      <div class="cat-item">
-        <div class="cat-item-esq">
-          <span class="cat-item-icone">${c.icone || ''}</span>
-          <span>${c.nome}</span>
-          <span class="cat-item-id">${c.id}</span>
-        </div>
-        <button class="btn-del-cat" onclick="deletarCategoria('evento','${c.id}')">✕</button>
-      </div>
-    `).join('');
-  }
-
-  function renderizarListaCat(containerId, fixas, dinamicas, tipo) {
-    const el = document.getElementById(containerId);
-    const todasFixas = fixas.map(c => `
-      <div class="cat-item">
-        <div class="cat-item-esq">
-          <span class="cat-item-icone">${c.icone}</span>
-          <span>${c.nome}</span>
-          <span class="cat-item-id">${c.id}</span>
-        </div>
-        <span style="font-size:0.7rem;color:var(--muted);font-family:var(--mono)">fixo</span>
-      </div>
-    `).join('');
-
-    const todasDin = dinamicas.map(c => `
-      <div class="cat-item">
-        <div class="cat-item-esq">
-          <span class="cat-item-icone">${c.icone || ''}</span>
-          <span>${c.nome}</span>
-          <span class="cat-item-id">${c.id}</span>
-        </div>
-        <button class="btn-del-cat" onclick="deletarCategoria('${tipo}','${c.id}')">✕</button>
-      </div>
-    `).join('');
-
-    el.innerHTML = todasFixas + todasDin ||
-      '<div class="cat-vazio">Nenhuma categoria criada ainda.</div>';
-  }
-
-  function atualizarSelectsCategorias(artisticas, eventos) {
-    const selArt = document.getElementById('input-categoria-art');
-    const opcsFixas = CATS_FIXAS_ART.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
-    const opcsDin = artisticas.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
-    selArt.innerHTML = opcsFixas + opcsDin;
-
-    // Select de eventos no upload
-    const selEv = document.getElementById('input-evento');
-    if (eventos.length) {
-      selEv.innerHTML = eventos.map(e => `<option value="${e.id}">${e.nome}</option>`).join('');
-    } else {
-      selEv.innerHTML = '<option value="">Nenhum evento criado ainda</option>';
-    }
-
-    // Select de filtro de fotos
-    const filtro = document.getElementById('filtro-categoria');
-    filtro.innerHTML = `
-      <option value="">Todas as categorias</option>
-      ${CATS_FIXAS_ART.map(c => `<option value="${c.id}">${c.nome}</option>`).join('')}
-      ${artisticas.map(c => `<option value="${c.id}">${c.nome}</option>`).join('')}
-      ${eventos.map(c => `<option value="${c.id}">${c.nome}</option>`).join('')}
-    `;
-  }
-
-  async function criarEvento() {
-    const id    = document.getElementById('ev-id').value.trim().toLowerCase().replace(/\s+/g,'-');
-    const nome  = document.getElementById('ev-nome').value.trim();
-    const icone = document.getElementById('ev-icone').value.trim();
-    if (!id || !nome) return mostrarMsg('ev', 'Preencha ID e nome.', 'erro');
-
-    const r = await fetch('/api/admin/eventos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': token },
-      body: JSON.stringify({ id, nome, icone })
-    });
-    if (r.ok) {
-      mostrarMsg('ev', '✅ Evento criado!', 'sucesso');
-      document.getElementById('ev-id').value = '';
-      document.getElementById('ev-nome').value = '';
-      document.getElementById('ev-icone').value = '';
-      carregarCategorias();
-    } else {
-      const d = await r.json();
-      mostrarMsg('ev', '❌ ' + (d.erro || 'Erro.'), 'erro');
-    }
-  }
-
-  async function criarCategoriaArt() {
-    const id    = document.getElementById('art-id').value.trim().toLowerCase().replace(/\s+/g,'-');
-    const nome  = document.getElementById('art-nome').value.trim();
-    const icone = document.getElementById('art-icone').value.trim();
-    if (!id || !nome) return mostrarMsg('art', 'Preencha ID e nome.', 'erro');
-    if (CATS_FIXAS_ART.some(c => c.id === id)) return mostrarMsg('art', 'Esse ID já existe como categoria fixa.', 'erro');
-
-    const r = await fetch('/api/admin/artisticas', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': token },
-      body: JSON.stringify({ id, nome, icone })
-    });
-    if (r.ok) {
-      mostrarMsg('art', '✅ Categoria criada!', 'sucesso');
-      document.getElementById('art-id').value = '';
-      document.getElementById('art-nome').value = '';
-      document.getElementById('art-icone').value = '';
-      carregarCategorias();
-    } else {
-      const d = await r.json();
-      mostrarMsg('art', '❌ ' + (d.erro || 'Erro.'), 'erro');
-    }
-  }
-
-  async function deletarCategoria(tipo, id) {
-    if (!confirm(`Remover esta ${tipo === 'evento' ? 'evento' : 'categoria'}? As fotos associadas a ela continuarão no catálogo.`)) return;
-    const endpoint = tipo === 'evento' ? 'eventos' : 'artisticas';
-    const r = await fetch(`/api/admin/${endpoint}/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': token }
-    });
-    if (r.ok) carregarCategorias();
     else alert('Erro ao remover.');
   }
 
   // ── Init ──
-  async function mostrarPainel() {
-    document.getElementById('tela-login').style.display = 'none';
-    document.getElementById('painel').style.display = 'block';
-    await carregarCategorias(); // carrega selects antes de tudo
-    carregarFotos();
-  }
-
   (async () => {
-    if (token && await verificarToken()) {
-      mostrarPainel();
+    if (token) {
+      const r = await fetch('/api/admin/verificar', { headers: { 'Authorization': token } });
+      if (r.ok) { mostrarPainel(); return; }
     }
   })();
 </script>
