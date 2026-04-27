@@ -6,7 +6,6 @@ const path       = require('path');
 const fs         = require('fs');
 const crypto     = require('crypto');
 const multer     = require('multer');
-const sharp      = require('sharp');
 const cloudinary = require('cloudinary').v2;
 const { criarCobrancaPix, consultarPagamento } = require('./pagamento');
 
@@ -17,44 +16,8 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// ── Marca d'água (aplicada em buffer, sem gravar no disco) ────
-const TEXTO_MARCA = '© Guilherme Fialho Soares';
-
-async function gerarBufferComMarca(buffer) {
-  const meta = await sharp(buffer).metadata();
-  const W    = meta.width;
-  const H    = meta.height;
-
-  const fontSize   = Math.max(18, Math.round(Math.min(W, H) * 0.035));
-  const repeticoes = 6;
-  const passo      = Math.round(Math.max(W, H) / repeticoes);
-  const svgTextos  = [];
-
-  for (let i = -repeticoes; i <= repeticoes * 2; i++) {
-    const x = i * passo;
-    svgTextos.push(`
-      <text x="${x}" y="0"
-        font-size="${fontSize}" font-family="Arial, sans-serif" font-weight="bold"
-        fill="white" fill-opacity="0.45"
-        stroke="black" stroke-width="0.5" stroke-opacity="0.2"
-        transform="rotate(-30, ${x}, 0)" letter-spacing="2"
-      >${TEXTO_MARCA}</text>
-    `);
-  }
-
-  const svg = Buffer.from(`
-    <svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
-      ${svgTextos.join('')}
-    </svg>
-  `);
-
-  return sharp(buffer)
-    .composite([{ input: svg, gravity: 'center' }])
-    .jpeg({ quality: 82 })
-    .toBuffer();
-}
-
 // ── Upload para o Cloudinary ──────────────────────────────────
+// Sobe o original e retorna a URL com marca d'água via transformação do Cloudinary
 function uploadParaCloudinary(buffer, publicId, pasta) {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
@@ -62,6 +25,52 @@ function uploadParaCloudinary(buffer, publicId, pasta) {
       (err, result) => err ? reject(err) : resolve(result)
     );
     stream.end(buffer);
+  });
+}
+
+// Gera URL do Cloudinary com marca d'água aplicada via transformação
+function urlComMarcaDagua(publicIdCompleto) {
+  return cloudinary.url(publicIdCompleto, {
+    transformation: [
+      // Repete o texto em diagonal cobrindo toda a imagem
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 20, y: 40 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 220, y: 40 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 420, y: 40 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 20, y: 200 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 220, y: 200 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 420, y: 200 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 20, y: 380 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 220, y: 380 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 420, y: 380 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 20, y: 560 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 220, y: 560 },
+      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' },
+        color: 'white', opacity: 45, angle: -30,
+        gravity: 'north_west', x: 420, y: 560 },
+    ],
+    secure: true,
   });
 }
 
@@ -141,7 +150,6 @@ app.post('/api/admin/upload', authMiddleware, upload.single('foto'), async (req,
   try {
     const { nome, preco, tipo, categoria } = req.body;
 
-    // Gera slug para usar como public_id no Cloudinary
     const slug = nome.toLowerCase()
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
@@ -150,20 +158,15 @@ app.post('/api/admin/upload', authMiddleware, upload.single('foto'), async (req,
     const publicId = `${slug}-${Date.now()}`;
     const bufferOriginal = req.file.buffer;
 
-    // 1. Sobe original (sem marca) para Cloudinary — pasta "originais"
+    // Sobe apenas o original — marca d'água é aplicada via URL do Cloudinary
     const resultOriginal = await uploadParaCloudinary(
       bufferOriginal,
       publicId,
       'guilherme-fialho/originais'
     );
 
-    // 2. Gera buffer com marca d'água e sobe — pasta "preview"
-    const bufferComMarca = await gerarBufferComMarca(bufferOriginal);
-    const resultPreview  = await uploadParaCloudinary(
-      bufferComMarca,
-      publicId,
-      'guilherme-fialho/preview'
-    );
+    // URL com marca d'água gerada pelo Cloudinary (sem processar no servidor)
+    const previewUrl = urlComMarcaDagua(`guilherme-fialho/originais/${publicId}`);
 
     const id = `${tipo === 'artistica' ? 'adm' : 'adme'}-${Date.now()}`;
 
@@ -172,8 +175,8 @@ app.post('/api/admin/upload', authMiddleware, upload.single('foto'), async (req,
       categoria: tipo,
       nome,
       preco: parseFloat(preco),
-      preview: resultPreview.secure_url,   // URL com marca d'água (exibição no site)
-      urlOriginal: resultOriginal.secure_url, // URL original (download após pagamento)
+      preview: previewUrl,                      // URL com marca d'água
+      urlOriginal: resultOriginal.secure_url,   // URL original para download
       publicId,
       arquivo: publicId,
       ...(tipo === 'artistica' ? { categoriaArtId: categoria } : { eventoId: categoria }),
@@ -183,7 +186,7 @@ app.post('/api/admin/upload', authMiddleware, upload.single('foto'), async (req,
     catalogo.fotos.push(novaFoto);
     salvarCatalogo(catalogo);
 
-    console.log(`✅ Foto enviada ao Cloudinary (com marca d'água): ${nome}`);
+    console.log(`✅ Foto enviada ao Cloudinary: ${nome}`);
     res.json({ ok: true, foto: novaFoto });
   } catch(e) {
     console.error(e);
