@@ -1,21 +1,29 @@
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 
-const express  = require('express');
-const cors     = require('cors');
-const path     = require('path');
-const fs       = require('fs');
-const crypto   = require('crypto');
-const multer   = require('multer');
-const sharp    = require('sharp');
+const express    = require('express');
+const cors       = require('cors');
+const path       = require('path');
+const fs         = require('fs');
+const crypto     = require('crypto');
+const multer     = require('multer');
+const sharp      = require('sharp');
+const cloudinary = require('cloudinary').v2;
 const { criarCobrancaPix, consultarPagamento } = require('./pagamento');
 
-// ── Marca d'água ─────────────────────────────────────────────
+// ── Cloudinary config ─────────────────────────────────────────
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// ── Marca d'água (aplicada em buffer, sem gravar no disco) ────
 const TEXTO_MARCA = '© Guilherme Fialho Soares';
 
-async function aplicarMarcaDagua(caminhoImg) {
-  const meta  = await sharp(caminhoImg).metadata();
-  const W     = meta.width;
-  const H     = meta.height;
+async function gerarBufferComMarca(buffer) {
+  const meta = await sharp(buffer).metadata();
+  const W    = meta.width;
+  const H    = meta.height;
 
   const fontSize   = Math.max(18, Math.round(Math.min(W, H) * 0.035));
   const repeticoes = 6;
@@ -40,12 +48,21 @@ async function aplicarMarcaDagua(caminhoImg) {
     </svg>
   `);
 
-  await sharp(caminhoImg)
+  return sharp(buffer)
     .composite([{ input: svg, gravity: 'center' }])
     .jpeg({ quality: 82 })
-    .toFile(caminhoImg + '.tmp');
+    .toBuffer();
+}
 
-  fs.renameSync(caminhoImg + '.tmp', caminhoImg);
+// ── Upload para o Cloudinary ──────────────────────────────────
+function uploadParaCloudinary(buffer, publicId, pasta) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { public_id: publicId, folder: pasta, overwrite: true, resource_type: 'image' },
+      (err, result) => err ? reject(err) : resolve(result)
+    );
+    stream.end(buffer);
+  });
 }
 
 const app  = express();
@@ -116,43 +133,38 @@ app.get('/api/admin/verificar', authMiddleware, (req, res) => {
   res.json({ ok: true });
 });
 
-// ── Admin: upload de foto ────────────────────────────────────
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const imgDir = path.join(__dirname, '../frontend/img');
-    const dlDir  = path.join(__dirname, '../downloads/artisticas');
-    fs.mkdirSync(imgDir, { recursive: true });
-    fs.mkdirSync(dlDir,  { recursive: true });
-    cb(null, imgDir);
-  },
-  filename: (req, file, cb) => {
-    const ext  = path.extname(file.originalname).toLowerCase();
-    const nome = req.body.nome || 'foto';
-    const slug = nome.toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
-    cb(null, `${slug}${ext}`);
-  }
-});
-
-const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
+// ── Admin: upload de foto ─────────────────────────────────────
+// Multer usa memória (sem gravar no disco) — Cloudinary cuida do armazenamento
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
 app.post('/api/admin/upload', authMiddleware, upload.single('foto'), async (req, res) => {
   try {
     const { nome, preco, tipo, categoria } = req.body;
-    const arquivo = req.file.filename;
 
-    const srcImg  = path.join(__dirname, '../frontend/img', arquivo);
-    const destDl  = path.join(__dirname, '../downloads/artisticas', arquivo);
+    // Gera slug para usar como public_id no Cloudinary
+    const slug = nome.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
 
-    // 1. Salva original (sem marca) em downloads
-    fs.copyFileSync(srcImg, destDl);
+    const publicId = `${slug}-${Date.now()}`;
+    const bufferOriginal = req.file.buffer;
 
-    // 2. Aplica marca d'água na cópia de frontend/img
-    await aplicarMarcaDagua(srcImg);
+    // 1. Sobe original (sem marca) para Cloudinary — pasta "originais"
+    const resultOriginal = await uploadParaCloudinary(
+      bufferOriginal,
+      publicId,
+      'guilherme-fialho/originais'
+    );
 
-    const catalogo = carregarCatalogo();
+    // 2. Gera buffer com marca d'água e sobe — pasta "preview"
+    const bufferComMarca = await gerarBufferComMarca(bufferOriginal);
+    const resultPreview  = await uploadParaCloudinary(
+      bufferComMarca,
+      publicId,
+      'guilherme-fialho/preview'
+    );
+
     const id = `${tipo === 'artistica' ? 'adm' : 'adme'}-${Date.now()}`;
 
     const novaFoto = {
@@ -160,15 +172,18 @@ app.post('/api/admin/upload', authMiddleware, upload.single('foto'), async (req,
       categoria: tipo,
       nome,
       preco: parseFloat(preco),
-      preview: `img/${arquivo}`,
-      arquivo,
+      preview: resultPreview.secure_url,   // URL com marca d'água (exibição no site)
+      urlOriginal: resultOriginal.secure_url, // URL original (download após pagamento)
+      publicId,
+      arquivo: publicId,
       ...(tipo === 'artistica' ? { categoriaArtId: categoria } : { eventoId: categoria }),
     };
 
+    const catalogo = carregarCatalogo();
     catalogo.fotos.push(novaFoto);
     salvarCatalogo(catalogo);
 
-    console.log(`✅ Foto adicionada via admin (com marca d'água): ${nome}`);
+    console.log(`✅ Foto enviada ao Cloudinary (com marca d'água): ${nome}`);
     res.json({ ok: true, foto: novaFoto });
   } catch(e) {
     console.error(e);
@@ -190,7 +205,7 @@ app.get('/api/admin/fotos', authMiddleware, (req, res) => {
 });
 
 // ── Admin: remover foto ──────────────────────────────────────
-app.delete('/api/admin/fotos/:id', authMiddleware, (req, res) => {
+app.delete('/api/admin/fotos/:id', authMiddleware, async (req, res) => {
   const catalogo = carregarCatalogo();
   const foto = catalogo.fotos.find(f => f.id === req.params.id);
   if (!foto) return res.status(404).json({ erro: 'Foto não encontrada' });
@@ -198,14 +213,18 @@ app.delete('/api/admin/fotos/:id', authMiddleware, (req, res) => {
   catalogo.fotos = catalogo.fotos.filter(f => f.id !== req.params.id);
   salvarCatalogo(catalogo);
 
-  // Remove arquivos do disco
-  try { fs.unlinkSync(path.join(__dirname, '../frontend/img', foto.arquivo)); } catch(e) {}
-  try { fs.unlinkSync(path.join(__dirname, '../downloads/artisticas', foto.arquivo)); } catch(e) {}
+  // Remove do Cloudinary (preview e original)
+  if (foto.publicId) {
+    try {
+      await cloudinary.uploader.destroy(`guilherme-fialho/preview/${foto.publicId}`);
+      await cloudinary.uploader.destroy(`guilherme-fialho/originais/${foto.publicId}`);
+    } catch(e) { console.warn('Erro ao remover do Cloudinary:', e.message); }
+  }
 
   res.json({ ok: true });
 });
 
-// ── Admin: endpoint para o frontend buscar fotos dinâmicas ───
+// ── Catálogo público ─────────────────────────────────────────
 app.get('/api/catalogo', (req, res) => {
   const catalogo = carregarCatalogo();
   res.json(catalogo.fotos);
@@ -226,12 +245,10 @@ function salvarCategorias(c) {
   try { fs.writeFileSync(CATEGORIAS_PATH, JSON.stringify(c, null, 2)); } catch(e) {}
 }
 
-// Listar categorias (público — usado pelo frontend)
 app.get('/api/categorias', (req, res) => {
   res.json(carregarCategorias());
 });
 
-// Criar novo evento
 app.post('/api/admin/eventos', authMiddleware, (req, res) => {
   const { id, nome, icone } = req.body;
   if (!id || !nome) return res.status(400).json({ erro: 'id e nome são obrigatórios' });
@@ -243,7 +260,6 @@ app.post('/api/admin/eventos', authMiddleware, (req, res) => {
   res.json({ ok: true });
 });
 
-// Remover evento
 app.delete('/api/admin/eventos/:id', authMiddleware, (req, res) => {
   const cats = carregarCategorias();
   cats.eventos = cats.eventos.filter(e => e.id !== req.params.id);
@@ -251,7 +267,6 @@ app.delete('/api/admin/eventos/:id', authMiddleware, (req, res) => {
   res.json({ ok: true });
 });
 
-// Criar nova categoria artística
 app.post('/api/admin/artisticas', authMiddleware, (req, res) => {
   const { id, nome, icone } = req.body;
   if (!id || !nome) return res.status(400).json({ erro: 'id e nome são obrigatórios' });
@@ -263,7 +278,6 @@ app.post('/api/admin/artisticas', authMiddleware, (req, res) => {
   res.json({ ok: true });
 });
 
-// Remover categoria artística
 app.delete('/api/admin/artisticas/:id', authMiddleware, (req, res) => {
   const cats = carregarCategorias();
   cats.artisticas = cats.artisticas.filter(c => c.id !== req.params.id);
@@ -283,7 +297,6 @@ app.post('/api/criar-pix', async (req, res) => {
       : `${itens.length} fotos - Guilherme Fialho`;
 
     const cobranca = await criarCobrancaPix({ valor: total, descricao, emailComprador });
-
     pagamentos[cobranca.id] = { itens, emailComprador, status: 'pending' };
     salvarPagamentos(pagamentos);
     res.json(cobranca);
@@ -312,16 +325,26 @@ app.get('/api/status/:id', async (req, res) => {
 });
 
 // ── GET /download/:token ─────────────────────────────────────
-app.get('/download/:token', (req, res) => {
+// Para fotos do Cloudinary, redireciona para a URL original
+// Para fotos antigas (disco), mantém compatibilidade
+app.get('/download/:token', async (req, res) => {
   const pag = Object.values(pagamentos).find(
     p => p.tokenDownload === req.params.token && p.status === 'approved'
   );
   if (!pag) return res.status(403).send('Link inválido ou expirado.');
 
-  const arquivo = pag.itens[0].arquivo;
+  // Suporta múltiplas fotos — envia a primeira (ou adapte para zip futuramente)
+  const item = pag.itens[0];
+
+  // Se a foto tem URL do Cloudinary, redireciona para o original
+  if (item.urlOriginal) {
+    return res.redirect(item.urlOriginal);
+  }
+
+  // Fallback para fotos antigas no disco
   const caminhos = [
-    path.join(__dirname, '../downloads/artisticas', arquivo),
-    path.join(__dirname, '../downloads', arquivo),
+    path.join(__dirname, '../downloads/artisticas', item.arquivo),
+    path.join(__dirname, '../downloads', item.arquivo),
   ];
   const caminho = caminhos.find(c => fs.existsSync(c));
   if (!caminho) return res.status(404).send('Arquivo não encontrado.');
