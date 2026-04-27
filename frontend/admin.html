@@ -549,7 +549,9 @@
 
           <div class="campo" id="campo-evento" style="display:none">
             <label>Evento</label>
-            <input type="text" id="input-evento" placeholder="Ex: meia-maratona"/>
+            <select id="input-evento">
+              <option value="">-- Selecione um evento --</option>
+            </select>
           </div>
 
           <button class="btn-primary" onclick="enviarFoto()">Adicionar ao Catálogo</button>
@@ -727,7 +729,7 @@
     if (!arquivoSelecionado) return mostrarMsg('upload', 'Selecione uma foto.', 'erro');
     if (!nome)               return mostrarMsg('upload', 'Informe o nome da foto.', 'erro');
     if (!preco || preco <= 0) return mostrarMsg('upload', 'Informe um preço válido.', 'erro');
-    if (tipo === 'evento' && !evento) return mostrarMsg('upload', 'Informe o ID do evento.', 'erro');
+    if (tipo === 'evento' && !evento) return mostrarMsg('upload', 'Selecione um evento.', 'erro');
 
     const btn = document.querySelector('#tab-upload .btn-primary');
     btn.textContent = 'Enviando...';
@@ -890,6 +892,14 @@
     const opcsFixas = CATS_FIXAS_ART.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
     const opcsDin = artisticas.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
     selArt.innerHTML = opcsFixas + opcsDin;
+
+    // Select de eventos no upload
+    const selEv = document.getElementById('input-evento');
+    if (eventos.length) {
+      selEv.innerHTML = eventos.map(e => `<option value="${e.id}">${e.nome}</option>`).join('');
+    } else {
+      selEv.innerHTML = '<option value="">Nenhum evento criado ainda</option>';
+    }
 
     // Select de filtro de fotos
     const filtro = document.getElementById('filtro-categoria');
