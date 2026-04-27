@@ -2,67 +2,8 @@
 // PRODUTO.JS — Catálogo com categorias: Eventos e Artísticas
 // ============================================================
 
-const EVENTOS = [
-  {
-    id: 'meia-maratona',
-    nome: 'Meia Maratona',
-    icone: '',
-    fotos: [
-      {
-        id: 'mm-001',
-        categoria: 'evento',
-        eventoId: 'meia-maratona',
-        nome: 'Largada da Meia Maratona',
-        preco: 20.00,
-        preview: 'img/foto1.jpeg',
-        arquivo: 'foto1.jpeg',
-      },
-      {
-        id: 'mm-002',
-        categoria: 'evento',
-        eventoId: 'meia-maratona',
-        nome: 'Corredor em Destaque',
-        preco: 20.00,
-        preview: 'img/foto2.jpeg',
-        arquivo: 'foto2.jpeg',
-      },
-      {
-        id: 'mm-003',
-        categoria: 'evento',
-        eventoId: 'meia-maratona',
-        nome: 'Chegada na Linha de Chegada',
-        preco: 20.00,
-        preview: 'img/foto3.jpeg',
-        arquivo: 'foto3.jpeg',
-      },
-    ],
-  },
-  {
-    id: 'triatlon',
-    nome: 'Triátlon',
-    icone: '',
-    fotos: [
-      {
-        id: 'tri-001',
-        categoria: 'evento',
-        eventoId: 'triatlon',
-        nome: 'Saída da Água',
-        preco: 20.00,
-        preview: 'img/foto4.jpeg',
-        arquivo: 'foto4.jpeg',
-      },
-      {
-        id: 'tri-002',
-        categoria: 'evento',
-        eventoId: 'triatlon',
-        nome: 'Percurso de Ciclismo',
-        preco: 20.00,
-        preview: 'img/foto5.jpeg',
-        arquivo: 'foto5.jpeg',
-      },
-    ],
-  },
-];
+// Eventos são 100% dinâmicos — sem fixos
+const EVENTOS = [];
 
 const CATEGORIAS_ARTISTICAS = [
   {
