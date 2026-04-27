@@ -78,12 +78,9 @@ const pagamentos = lerJSON(PAGAMENTOS_PATH, {});
 // Estrutura padrão (espelho do produto.js)
 const estruturaPadrao = {
   eventos: [
-    { id: 'meia-maratona', nome: 'Meia Maratona' },
-    { id: 'triatlon',      nome: 'Triátlon'      },
   ],
   categorias: [
     { id: 'paisagens',   nome: 'Paisagens'    },
-    { id: 'retratos',    nome: 'Retratos'     },
     { id: 'animais',     nome: 'Animais'      },
     { id: 'luar',        nome: 'Luar'         },
     { id: 'natureza',    nome: 'Natureza'     },
