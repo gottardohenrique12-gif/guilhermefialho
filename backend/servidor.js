@@ -27,41 +27,22 @@ function uploadParaCloudinary(buffer, publicId, pasta) {
 }
 
 function urlComMarcaDagua(publicIdCompleto) {
-  return cloudinary.url(publicIdCompleto, {
-    transformation: [
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 0, y: 0 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 200, y: 0 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 400, y: 0 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 600, y: 0 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 800, y: 0 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 0, y: 160 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 200, y: 160 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 400, y: 160 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 600, y: 160 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 800, y: 160 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 0, y: 320 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 200, y: 320 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 400, y: 320 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 600, y: 320 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 800, y: 320 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 0, y: 480 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 200, y: 480 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 400, y: 480 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 600, y: 480 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 800, y: 480 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 0, y: 640 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 200, y: 640 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 400, y: 640 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 600, y: 640 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 800, y: 640 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 0, y: 800 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 200, y: 800 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 400, y: 800 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 600, y: 800 },
-      { overlay: { font_family: 'Arial', font_size: 22, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 800, y: 800 },
-    ],
-    secure: true,
-  });
+  // Gera URL com marca d'agua em tile uniforme usando raw transformation
+  // fl_tiled replica o texto como uma camada que cobre 100% da imagem
+  const encoded = encodeURIComponent('© Guilherme Fialho Soares');
+  const baseUrl = cloudinary.url(publicIdCompleto, { secure: true });
+  // Injeta a transformation de marca dagua diretamente na URL
+  // Formato: /l_text:Arial_22_bold:<texto>,co_white,o_40,a_-30,fl_tiled/
+  const watermarkTransform = [
+    `l_text:Arial_22_bold:${encoded}`,
+    'co_white',
+    'o_40',
+    'a_-30',
+    'fl_tiled',
+    'fl_layer_apply',
+  ].join(',');
+  // Insere o transform antes do public_id na URL
+  return baseUrl.replace('/image/upload/', `/image/upload/${watermarkTransform}/`);
 }
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -132,16 +113,7 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 
 
 app.post('/api/admin/upload', authMiddleware, upload.single('foto'), async (req, res) => {
   try {
-    const { preco, tipo, categoria } = req.body;
-
-    // Limpa nome: remove timestamps WhatsApp, IDs numericos e sujeira
-    const nome = (req.body.nome || '')
-      .replace(/whatsapp\s*image\s*/gi, '')
-      .replace(/\d{4}[\s\-]\d{2}[\s\-]\d{2}.*/i, '')
-      .replace(/\bat\s+[\d\.]+/gi, '')
-      .replace(/\b\d{7,}\b/g, '')
-      .replace(/[-_\s]+/g, ' ').trim()
-      || 'Foto sem titulo';
+    const { nome, preco, tipo, categoria } = req.body;
 
     const slug = nome.toLowerCase()
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
