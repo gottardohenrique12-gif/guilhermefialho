@@ -111,7 +111,14 @@ app.post('/api/admin/login', (req, res) => {
 app.get('/api/admin/verificar', authMiddleware, (req, res) => res.json({ ok: true }));
 
 // ── Upload ───────────────────────────────────────────────────
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize:  50 * 1024 * 1024,  // 50 MB por arquivo
+    files:     500,                // até 500 arquivos por requisição (lote)
+    fieldSize: 10 * 1024 * 1024,  // 10 MB por campo de texto
+  }
+});
 
 app.post('/api/admin/upload', authMiddleware, upload.single('foto'), async (req, res) => {
   try {
