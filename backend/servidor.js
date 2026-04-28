@@ -27,25 +27,26 @@ function uploadParaCloudinary(buffer, publicId, pasta) {
 }
 
 function urlComMarcaDagua(publicIdCompleto) {
+  // tile:true cobre qualquer tamanho e orientacao de imagem
   return cloudinary.url(publicIdCompleto, {
     transformation: [
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 20,  y: 40  },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 220, y: 40  },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 420, y: 40  },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 20,  y: 200 },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 220, y: 200 },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 420, y: 200 },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 20,  y: 380 },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 220, y: 380 },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 420, y: 380 },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 20,  y: 560 },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 220, y: 560 },
-      { overlay: { font_family: 'Arial', font_size: 28, font_weight: 'bold', text: '© Guilherme Fialho Soares' }, color: 'white', opacity: 45, angle: -30, gravity: 'north_west', x: 420, y: 560 },
+      { width: 1400, height: 1400, crop: 'limit' },
+      {
+        overlay: {
+          font_family: 'Arial',
+          font_size: 24,
+          font_weight: 'bold',
+          text: '© Guilherme Fialho Soares',
+        },
+        color: 'white',
+        opacity: 40,
+        angle: -30,
+        tile: true,
+      },
     ],
     secure: true,
   });
 }
-
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
@@ -111,14 +112,7 @@ app.post('/api/admin/login', (req, res) => {
 app.get('/api/admin/verificar', authMiddleware, (req, res) => res.json({ ok: true }));
 
 // ── Upload ───────────────────────────────────────────────────
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize:  50 * 1024 * 1024,  // 50 MB por arquivo
-    files:     500,                // até 500 arquivos por requisição (lote)
-    fieldSize: 10 * 1024 * 1024,  // 10 MB por campo de texto
-  }
-});
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
 app.post('/api/admin/upload', authMiddleware, upload.single('foto'), async (req, res) => {
   try {
