@@ -276,16 +276,99 @@ app.get('/download/:token', async (req, res) => {
   );
   if (!pag) return res.status(403).send('Link inválido ou expirado.');
 
-  const item = pag.itens[0];
+  const linksHTML = pag.itens.map((item, i) => {
+    let href = '';
+    if (item.urlOriginal) {
+      href = item.urlOriginal;
+    } else {
+      const caminhos = [
+        path.join(__dirname, '../downloads/artisticas', item.arquivo),
+        path.join(__dirname, '../downloads', item.arquivo),
+      ];
+      const caminho = caminhos.find(c => fs.existsSync(c));
+      href = caminho ? `/download-arquivo/${req.params.token}/${i}` : '';
+    }
+    return `
+      <div class="foto-item">
+        <div class="foto-num">${String(i + 1).padStart(2, '0')}</div>
+        <div class="foto-info">
+          <div class="foto-nome">${item.nome}</div>
+          <div class="foto-preco">R$ ${item.preco.toFixed(2).replace('.', ',')}</div>
+        </div>
+        ${href
+          ? `<a class="btn-baixar" href="${href}" download target="_blank">Baixar</a>`
+          : `<span class="btn-indisponivel">Indisponivel</span>`
+        }
+      </div>`;
+  }).join('');
 
-  if (item.urlOriginal) return res.redirect(item.urlOriginal);
+  res.send(`<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Suas Fotos - Guilherme Fialho Soares</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#f5f4f1;--surface:#fff;--border:#ddd9d3;--accent:#8c7355;--text:#1a1916;--muted:#8a8680;--success:#3a7a58}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:2rem 1rem}
+    .container{max-width:620px;margin:0 auto}
+    .header{text-align:center;margin-bottom:2.5rem}
+    .icone{font-size:2.5rem;margin-bottom:1rem}
+    h1{font-size:1.5rem;font-weight:300;margin-bottom:0.4rem}
+    .header p{font-size:0.85rem;color:var(--muted)}
+    .badge-pago{display:inline-block;background:rgba(58,122,88,0.1);border:1px solid var(--success);color:var(--success);font-family:'DM Mono',monospace;font-size:0.68rem;letter-spacing:0.1em;padding:0.3rem 0.8rem;text-transform:uppercase;margin-bottom:1.5rem}
+    .lista{display:flex;flex-direction:column;gap:0.75rem;margin-bottom:2rem}
+    .foto-item{background:var(--surface);border:1px solid var(--border);padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem}
+    .foto-num{font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);flex-shrink:0;width:24px}
+    .foto-info{flex:1;min-width:0}
+    .foto-nome{font-size:0.9rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .foto-preco{font-size:0.75rem;color:var(--muted);font-family:'DM Mono',monospace;margin-top:0.15rem}
+    .btn-baixar{flex-shrink:0;background:var(--accent);color:#fff;text-decoration:none;padding:0.5rem 1rem;font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;transition:opacity 0.2s;white-space:nowrap}
+    .btn-baixar:hover{opacity:0.85}
+    .btn-indisponivel{flex-shrink:0;font-size:0.72rem;color:var(--muted);font-family:'DM Mono',monospace}
+    .aviso{background:rgba(140,115,85,0.07);border:1px solid var(--border);padding:1rem 1.25rem;font-size:0.8rem;color:var(--muted);line-height:1.6;text-align:center}
+    .footer{text-align:center;margin-top:2.5rem;font-size:0.75rem;color:var(--muted)}
+    .footer a{color:var(--accent);text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="icone">📷</div>
+      <div class="badge-pago">✓ Pagamento confirmado</div>
+      <h1>Suas fotos estao prontas!</h1>
+      <p>Clique em <strong>Baixar</strong> em cada foto para salvar no seu dispositivo.</p>
+    </div>
+    <div class="lista">${linksHTML}</div>
+    <div class="aviso">
+      Guarde este link — ele da acesso permanente as suas fotos.<br/>
+      Em caso de duvidas, entre em contato com o fotografo.
+    </div>
+    <div class="footer">
+      <p>2025 Guilherme Fialho Soares &nbsp;·&nbsp;
+        <a href="https://guilhermefialhosoaresfotografia.myportfolio.com/" target="_blank">Ver portfolio</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>`);
+});
 
+app.get('/download-arquivo/:token/:index', (req, res) => {
+  const pag = Object.values(pagamentos).find(
+    p => p.tokenDownload === req.params.token && p.status === 'approved'
+  );
+  if (!pag) return res.status(403).send('Link invalido ou expirado.');
+  const item = pag.itens[parseInt(req.params.index)];
+  if (!item) return res.status(404).send('Foto nao encontrada.');
   const caminhos = [
     path.join(__dirname, '../downloads/artisticas', item.arquivo),
     path.join(__dirname, '../downloads', item.arquivo),
   ];
   const caminho = caminhos.find(c => fs.existsSync(c));
-  if (!caminho) return res.status(404).send('Arquivo não encontrado.');
+  if (!caminho) return res.status(404).send('Arquivo nao encontrado.');
   res.download(caminho);
 });
 
@@ -309,4 +392,4 @@ app.listen(PORT, () => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log(`🚀 Servidor: http://localhost:${PORT}`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-}); 
+});
