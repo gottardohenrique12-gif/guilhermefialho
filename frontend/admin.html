@@ -990,11 +990,11 @@
       `${catNome} (${tipo})`;
   }
 
-  function loteAtualizarItemStatus(id, status) {
+  function loteAtualizarItemStatus(id, status, msg) {
     const el = document.getElementById(`lote-status-${id}`);
     if (!el) return;
     el.className = `lote-item-status ${status}`;
-    el.textContent = loteStatusTexto(status);
+    el.textContent = (status === 'erro' && msg) ? `✗ Erro: ${msg}` : loteStatusTexto(status);
     const item = document.getElementById(`lote-item-${id}`);
     if (item) {
       const btnRem = item.querySelector('.lote-item-remover');
@@ -1038,8 +1038,8 @@
     let   enviados  = 0;
     let   erros     = 0;
 
-    // Concorrência: 4 uploads simultâneos para não sobrecarregar o Cloudinary
-    const CONCORRENCIA = 4;
+    // Concorrência: 2 uploads simultâneos para respeitar limites do Cloudinary
+    const CONCORRENCIA = 2;
 
     const fila = [...loteArquivos]; // cópia para iterar
     let   idx  = 0;
@@ -1071,7 +1071,8 @@
           enviados++;
         } catch(e) {
           item.status = 'erro';
-          loteAtualizarItemStatus(item.id, 'erro');
+          item.erroMsg = e.message || 'Erro desconhecido';
+          loteAtualizarItemStatus(item.id, 'erro', item.erroMsg);
           erros++;
           console.error('Erro ao enviar', item.nome, e);
         }

@@ -27,22 +27,30 @@ function uploadParaCloudinary(buffer, publicId, pasta) {
 }
 
 function urlComMarcaDagua(publicIdCompleto) {
-  // Gera URL com marca d'agua em tile uniforme usando raw transformation
-  // fl_tiled replica o texto como uma camada que cobre 100% da imagem
-  const encoded = encodeURIComponent('© Guilherme Fialho Soares');
-  const baseUrl = cloudinary.url(publicIdCompleto, { secure: true });
-  // Injeta a transformation de marca dagua diretamente na URL
-  // Formato: /l_text:Arial_22_bold:<texto>,co_white,o_40,a_-30,fl_tiled/
-  const watermarkTransform = [
-    `l_text:Arial_22_bold:${encoded}`,
-    'co_white',
-    'o_40',
-    'a_-30',
-    'fl_tiled',
-    'fl_layer_apply',
-  ].join(',');
-  // Insere o transform antes do public_id na URL
-  return baseUrl.replace('/image/upload/', `/image/upload/${watermarkTransform}/`);
+  // Cloudinary usa sintaxe própria para texto: espaços viram '_', '%' proibido
+  // O símbolo © precisa ser omitido ou substituído por texto ASCII puro
+  const textoMarca = 'Guilherme Fialho Soares'; // sem © para evitar encoding inválido
+  // Substitui espaços por underline conforme sintaxe do Cloudinary
+  const textoCloudinary = textoMarca.replace(/ /g, '_');
+
+  return cloudinary.url(publicIdCompleto, {
+    secure: true,
+    transformation: [
+      {
+        overlay: {
+          font_family: 'Arial',
+          font_size: 24,
+          font_weight: 'bold',
+          text: textoCloudinary,
+        },
+        color: 'white',
+        opacity: 40,
+        angle: -30,
+        flags: 'tiled',
+      },
+      { flags: 'layer_apply' },
+    ],
+  });
 }
 const app  = express();
 const PORT = process.env.PORT || 3000;
