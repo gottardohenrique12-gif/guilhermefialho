@@ -27,29 +27,23 @@ function uploadParaCloudinary(buffer, publicId, pasta) {
 }
 
 function urlComMarcaDagua(publicIdCompleto) {
-  // Cloudinary: espaços viram '_', © vira 'c' com encoding seguro
-  // flags:'tiled' deve ficar na camada layer_apply para funcionar corretamente
-  const textoCloudinary = 'c._Guilherme_Fialho_Soares';
-
   return cloudinary.url(publicIdCompleto, {
     secure: true,
     transformation: [
-      // 1. Redimensiona para preview web (máx 1200px, qualidade 75)
       { width: 1200, crop: 'limit', quality: 75, fetch_format: 'auto' },
-      // 2. Adiciona a camada de texto (marca d'água)
       {
         overlay: {
           font_family: 'Arial',
-          font_size: 28,
+          font_size: 40,
           font_weight: 'bold',
-          text: textoCloudinary,
+          text: 'Guilherme_Fialho_Soares',
         },
         color: 'white',
-        opacity: 45,
+        opacity: 50,
         angle: -30,
+        gravity: 'center',
+        flags: 'layer_apply',
       },
-      // 3. Aplica a camada com tiling para cobrir toda a imagem
-      { flags: 'tiled,layer_apply' },
     ],
   });
 }
