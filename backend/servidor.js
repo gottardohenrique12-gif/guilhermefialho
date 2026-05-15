@@ -34,7 +34,7 @@ function urlComMarcaDagua(publicIdCompleto) {
       {
         overlay: {
           font_family: 'Arial',
-          font_size: 40,
+          font_size: 80,
           font_weight: 'bold',
           text: 'Guilherme_Fialho_Soares',
         },
