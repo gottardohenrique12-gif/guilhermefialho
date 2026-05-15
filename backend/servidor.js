@@ -27,31 +27,43 @@ function uploadParaCloudinary(buffer, publicId, pasta) {
 }
 
 function urlComMarcaDagua(publicIdCompleto) {
-  // Cloudinary usa sintaxe própria para texto: espaços viram '_', '%' proibido
-  // O símbolo © precisa ser omitido ou substituído por texto ASCII puro
-  const textoMarca = 'Guilherme Fialho Soares'; // sem © para evitar encoding inválido
-  // Substitui espaços por underline conforme sintaxe do Cloudinary
-  const textoCloudinary = textoMarca.replace(/ /g, '_');
+  // Cloudinary: espaços viram '_', © vira 'c' com encoding seguro
+  // flags:'tiled' deve ficar na camada layer_apply para funcionar corretamente
+  const textoCloudinary = 'c._Guilherme_Fialho_Soares';
 
   return cloudinary.url(publicIdCompleto, {
     secure: true,
     transformation: [
+      // 1. Redimensiona para preview web (máx 1200px, qualidade 75)
+      { width: 1200, crop: 'limit', quality: 75, fetch_format: 'auto' },
+      // 2. Adiciona a camada de texto (marca d'água)
       {
         overlay: {
           font_family: 'Arial',
-          font_size: 24,
+          font_size: 28,
           font_weight: 'bold',
           text: textoCloudinary,
         },
         color: 'white',
-        opacity: 40,
+        opacity: 45,
         angle: -30,
-        flags: 'tiled',
       },
-      { flags: 'layer_apply' },
+      // 3. Aplica a camada com tiling para cobrir toda a imagem
+      { flags: 'tiled,layer_apply' },
     ],
   });
 }
+
+// URL otimizada para preview sem marca d'água (thumbnail pequeno)
+function urlPreviewOtimizada(publicIdCompleto) {
+  return cloudinary.url(publicIdCompleto, {
+    secure: true,
+    transformation: [
+      { width: 800, crop: 'limit', quality: 70, fetch_format: 'auto' },
+    ],
+  });
+}
+
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
@@ -117,7 +129,8 @@ app.post('/api/admin/login', (req, res) => {
 app.get('/api/admin/verificar', authMiddleware, (req, res) => res.json({ ok: true }));
 
 // ── Upload ───────────────────────────────────────────────────
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
+const sharp = require('sharp');
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100 * 1024 * 1024 } });
 
 app.post('/api/admin/upload', authMiddleware, upload.single('foto'), async (req, res) => {
   try {
@@ -129,8 +142,14 @@ app.post('/api/admin/upload', authMiddleware, upload.single('foto'), async (req,
 
     const publicId = `${slug}-${Date.now()}`;
 
+    // Comprime e corrige orientação EXIF antes de enviar ao Cloudinary
+    const bufferOtimizado = await sharp(req.file.buffer)
+      .rotate()                                  // corrige orientação automática
+      .jpeg({ quality: 90, mozjpeg: true })      // qualidade alta para download
+      .toBuffer();
+
     const resultOriginal = await uploadParaCloudinary(
-      req.file.buffer, publicId, 'guilherme-fialho/originais'
+      bufferOtimizado, publicId, 'guilherme-fialho/originais'
     );
 
     const previewUrl = urlComMarcaDagua(`guilherme-fialho/originais/${publicId}`);
