@@ -756,3 +756,54 @@ footer a:hover { color: #f8f6f1; }
   .facial-opcoes   { flex-direction: column; }
   .facial-grade    { grid-template-columns: repeat(2, 1fr); }
 }
+/* ── Modal Preview ─────────────────────────────────────────── */
+.preview-conteudo {
+  max-width: 90vw;
+  max-height: 90vh;
+  width: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  background: #1a1a1a;
+}
+
+.preview-conteudo img {
+  max-width: 100%;
+  max-height: 75vh;
+  object-fit: contain;
+  border-radius: 6px;
+  display: block;
+}
+
+.preview-rodape {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.preview-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.preview-info h3 {
+  margin: 0;
+  color: #f8f6f1;
+  font-size: 1rem;
+}
+
+.preview-info span {
+  color: #c9a84c;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+@media (max-width: 600px) {
+  .preview-conteudo { max-width: 98vw; padding: 0.7rem; }
+  .preview-rodape { flex-direction: column; align-items: flex-start; }
+}

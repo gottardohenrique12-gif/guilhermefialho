@@ -1,3 +1,42 @@
+// ── Preview da foto ───────────────────────────────────────────
+let produtoPreviewAtual = null;
+
+function abrirPreview(id) {
+  const produto = PRODUTOS.find(p => p.id === id);
+  if (!produto) return;
+  produtoPreviewAtual = produto;
+
+  document.getElementById('preview-img').src = produto.preview;
+  document.getElementById('preview-nome').textContent = produto.nome;
+  document.getElementById('preview-preco').textContent =
+    'R$ ' + produto.preco.toFixed(2).replace('.', ',');
+
+  atualizarBtnPreview();
+
+  document.getElementById('modal-preview').classList.remove('escondido');
+  document.getElementById('overlay').classList.remove('escondido');
+}
+
+function atualizarBtnPreview() {
+  if (!produtoPreviewAtual) return;
+  const noCarrinho = carrinho.some(i => i.id === produtoPreviewAtual.id);
+  const btn = document.getElementById('preview-btn-carrinho');
+  btn.textContent = noCarrinho ? '✓ Adicionado' : '+ Carrinho';
+  btn.className = noCarrinho ? 'btn-adicionar no-carrinho' : 'btn-adicionar';
+}
+
+function toggleCarrinhoPreview() {
+  if (!produtoPreviewAtual) return;
+  toggleCarrinho(produtoPreviewAtual.id);
+  atualizarBtnPreview();
+}
+
+function fecharPreview() {
+  document.getElementById('modal-preview').classList.add('escondido');
+  document.getElementById('overlay').classList.add('escondido');
+  produtoPreviewAtual = null;
+}
+
 // ============================================================
 // APP.JS — Navegação por seções (Eventos / Artísticas) + Carrinho
 // ============================================================
@@ -125,7 +164,7 @@ function criarCard(produto) {
   card.id = `card-${produto.id}`;
   card.innerHTML = `
     <div class="card-imagem">
-      <img src="${produto.preview}" alt="${produto.nome}" loading="lazy"/>
+      <img src="${produto.preview}" alt="${produto.nome}" loading="lazy" onclick="abrirPreview('${produto.id}')" style="cursor:zoom-in"/>
       <div class="card-check">✓</div>
     </div>
     <div class="card-info">
@@ -309,7 +348,7 @@ function fecharPix() {
   document.getElementById('modal-pix').classList.add('escondido');
   document.getElementById('overlay').classList.add('escondido');
 }
-function fecharTudo() { fecharCarrinho(); fecharPix(); }
+function fecharTudo() { fecharCarrinho(); fecharPix(); fecharPreview(); }
 
 // ── Inicia ────────────────────────────────────────────────────
 init();

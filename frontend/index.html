@@ -131,6 +131,21 @@
     </div>
   </div>
 
+  <!-- MODAL PREVIEW DA FOTO -->
+  <div id="modal-preview" class="modal escondido">
+    <div class="modal-conteudo preview-conteudo">
+      <button class="fechar" onclick="fecharPreview()">&#x2715;</button>
+      <img id="preview-img" src="" alt=""/>
+      <div class="preview-rodape">
+        <div class="preview-info">
+          <h3 id="preview-nome"></h3>
+          <span id="preview-preco"></span>
+        </div>
+        <button id="preview-btn-carrinho" onclick="toggleCarrinhoPreview()"></button>
+      </div>
+    </div>
+  </div>
+
   <!-- FUNDO ESCURO -->
   <div id="overlay" class="escondido" onclick="fecharTudo()"></div>
 
