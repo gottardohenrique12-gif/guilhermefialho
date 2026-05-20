@@ -6,7 +6,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "start": "node backend/servidor.js"
+    "start": "node --max-old-space-size=512 backend/servidor.js"
   },
   "dependencies": {
     "@vladmandic/face-api": "^1.7.15",
