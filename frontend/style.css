@@ -803,7 +803,68 @@ footer a:hover { color: #f8f6f1; }
   font-size: 1rem;
 }
 
+
+/* ── BOTÕES FLUTUANTES DE CONTATO ── */
+.contato-flutuante {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 300;
+}
+
+.btn-flutuante {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.1rem;
+  border-radius: 50px;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  transition: transform 0.2s, box-shadow 0.2s, padding 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 160px;
+}
+
+.btn-flutuante span {
+  display: inline-block;
+  max-width: 80px;
+  overflow: hidden;
+  transition: max-width 0.3s, opacity 0.3s;
+}
+
+.btn-flutuante:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+}
+
+.btn-whatsapp {
+  background: #25D366;
+  color: #fff;
+}
+.btn-whatsapp:hover { background: #1ebe5a; }
+
+.btn-email {
+  background: #c9a84c;
+  color: #1a1a1a;
+}
+.btn-email:hover { background: #b8962e; }
+
 @media (max-width: 600px) {
-  .preview-conteudo { max-width: 98vw; padding: 0.7rem; }
-  .preview-rodape { flex-direction: column; align-items: flex-start; }
+  .contato-flutuante {
+    bottom: 1rem;
+    right: 1rem;
+  }
+  .btn-flutuante {
+    padding: 0.6rem;
+    border-radius: 50%;
+    max-width: 48px;
+    justify-content: center;
+  }
+  .btn-flutuante span { max-width: 0; opacity: 0; }
 }
