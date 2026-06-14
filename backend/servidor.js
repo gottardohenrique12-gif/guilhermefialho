@@ -1,13 +1,54 @@
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 
-const express    = require('express');
-const cors       = require('cors');
-const path       = require('path');
-const fs         = require('fs');
-const crypto     = require('crypto');
-const multer     = require('multer');
-const cloudinary = require('cloudinary').v2;
+const express      = require('express');
+const cors         = require('cors');
+const path         = require('path');
+const fs           = require('fs');
+const crypto       = require('crypto');
+const multer       = require('multer');
+const cloudinary   = require('cloudinary').v2;
+const nodemailer   = require('nodemailer');
 const { criarCobrancaPix, consultarPagamento } = require('./pagamento');
+
+// ── Nodemailer (Gmail via App Password) ──────────────────────
+const mailer = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_REMETENTE,   // ex: guilhermefialhofotografia@gmail.com
+    pass: process.env.EMAIL_APP_SENHA,   // Senha de app do Google (não a senha normal)
+  },
+});
+
+async function enviarEmailDownload(emailComprador, linkDownload, itens) {
+  const listaFotos = itens.map(i => `<li>${i.nome}</li>`).join('');
+  const urlCompleta = `${process.env.BASE_URL || 'http://localhost:3000'}${linkDownload}`;
+
+  await mailer.sendMail({
+    from: `"Guilherme Fialho Soares" <${process.env.EMAIL_REMETENTE}>`,
+    to: emailComprador,
+    subject: '📷 Suas fotos estão prontas para download!',
+    html: `
+      <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1916">
+        <h2 style="color:#8c7355">Pagamento confirmado! 🎉</h2>
+        <p>Olá! Seu pagamento foi aprovado e suas fotos já estão disponíveis.</p>
+        <p><strong>Fotos adquiridas:</strong></p>
+        <ul>${listaFotos}</ul>
+        <p style="margin:2rem 0">
+          <a href="${urlCompleta}"
+             style="background:#8c7355;color:#fff;padding:0.75rem 1.5rem;text-decoration:none;font-weight:bold;display:inline-block;border-radius:4px">
+            📥 Baixar minhas fotos
+          </a>
+        </p>
+        <p style="font-size:0.85rem;color:#888">
+          Guarde este e-mail — o link dá acesso permanente às suas fotos.<br/>
+          Dúvidas? Responda este e-mail ou fale pelo WhatsApp: (51) 98942-972
+        </p>
+        <hr style="border:none;border-top:1px solid #eee;margin:2rem 0"/>
+        <p style="font-size:0.75rem;color:#aaa">© 2025 Guilherme Fialho Soares Fotografia</p>
+      </div>
+    `,
+  });
+}
 
 // ── Cloudinary config ─────────────────────────────────────────
 cloudinary.config({
@@ -299,10 +340,18 @@ app.get('/api/status/:id', async (req, res) => {
     const dados = await consultarPagamento(req.params.id);
     if (dados.status === 'approved' && pagamentos[req.params.id]) {
       const pag = pagamentos[req.params.id];
+      const jaEraAprovado = pag.status === 'approved';
       pag.status = 'approved';
       if (!pag.tokenDownload) {
         pag.tokenDownload = crypto.randomBytes(32).toString('hex');
         salvarJSON(PAGAMENTOS_PATH, pagamentos);
+      }
+      // Envia e-mail apenas na primeira vez que detecta aprovação
+      if (!jaEraAprovado && pag.emailComprador) {
+        const link = `/download/${pag.tokenDownload}`;
+        enviarEmailDownload(pag.emailComprador, link, pag.itens)
+          .then(() => console.log(`📧 E-mail enviado para ${pag.emailComprador}`))
+          .catch(e => console.error('Erro ao enviar e-mail:', e.message));
       }
       return res.json({ ...dados, linkDownload: `/download/${pag.tokenDownload}` });
     }
@@ -319,17 +368,8 @@ app.get('/download/:token', async (req, res) => {
   if (!pag) return res.status(403).send('Link inválido ou expirado.');
 
   const linksHTML = pag.itens.map((item, i) => {
-    let href = '';
-    if (item.urlOriginal) {
-      href = item.urlOriginal;
-    } else {
-      const caminhos = [
-        path.join(__dirname, '../downloads/artisticas', item.arquivo),
-        path.join(__dirname, '../downloads', item.arquivo),
-      ];
-      const caminho = caminhos.find(c => fs.existsSync(c));
-      href = caminho ? `/download-arquivo/${req.params.token}/${i}` : '';
-    }
+    // Sempre usa a rota proxy — garante download real no iOS/Safari
+    const href = `/download-foto/${req.params.token}/${i}`;
     return `
       <div class="foto-item">
         <div class="foto-num">${String(i + 1).padStart(2, '0')}</div>
@@ -337,10 +377,7 @@ app.get('/download/:token', async (req, res) => {
           <div class="foto-nome">${item.nome}</div>
           <div class="foto-preco">R$ ${item.preco.toFixed(2).replace('.', ',')}</div>
         </div>
-        ${href
-          ? `<a class="btn-baixar" href="${href}" download target="_blank">Baixar</a>`
-          : `<span class="btn-indisponivel">Indisponivel</span>`
-        }
+        <a class="btn-baixar" href="${href}" download>⬇ Baixar</a>
       </div>`;
   }).join('');
 
@@ -414,16 +451,68 @@ app.get('/download-arquivo/:token/:index', (req, res) => {
   res.download(caminho);
 });
 
+// ── Proxy de download do Cloudinary (resolve Safari/iOS) ─────
+// Em vez de apontar direto para a URL do Cloudinary (que o Safari
+// abre como nova aba), o frontend chama esta rota, que busca a
+// imagem no servidor e a serve com Content-Disposition: attachment.
+app.get('/download-foto/:token/:index', async (req, res) => {
+  const pag = Object.values(pagamentos).find(
+    p => p.tokenDownload === req.params.token && p.status === 'approved'
+  );
+  if (!pag) return res.status(403).send('Link invalido ou expirado.');
+
+  const item = pag.itens[parseInt(req.params.index)];
+  if (!item) return res.status(404).send('Foto nao encontrada.');
+
+  try {
+    if (item.urlOriginal) {
+      // Busca a imagem original no Cloudinary e faz proxy
+      const https = require('https');
+      const url   = new URL(item.urlOriginal);
+      https.get({ hostname: url.hostname, path: url.pathname + url.search }, (imgRes) => {
+        const nomeArquivo = `${item.nome.replace(/[^a-z0-9]/gi, '_')}.jpg`;
+        res.setHeader('Content-Disposition', `attachment; filename="${nomeArquivo}"`);
+        res.setHeader('Content-Type', 'image/jpeg');
+        imgRes.pipe(res);
+      }).on('error', () => res.status(500).send('Erro ao baixar foto.'));
+    } else {
+      // Fallback: arquivo local
+      const caminhos = [
+        path.join(__dirname, '../downloads/artisticas', item.arquivo),
+        path.join(__dirname, '../downloads', item.arquivo),
+      ];
+      const caminho = caminhos.find(c => fs.existsSync(c));
+      if (!caminho) return res.status(404).send('Arquivo nao encontrado.');
+      res.download(caminho, `${item.nome.replace(/[^a-z0-9]/gi, '_')}.jpg`);
+    }
+  } catch(e) {
+    console.error('Erro no proxy de download:', e);
+    res.status(500).send('Erro interno.');
+  }
+});
+
 app.post('/api/webhook', async (req, res) => {
   const { type, data } = req.body;
   if (type === 'payment') {
     try {
-      const pag = await consultarPagamento(data.id);
-      if (pag.status === 'approved' && pagamentos[data.id]) {
-        pagamentos[data.id].status = 'approved';
+      const dados = await consultarPagamento(data.id);
+      if (dados.status === 'approved' && pagamentos[data.id]) {
+        const pag = pagamentos[data.id];
+        const jaEraAprovado = pag.status === 'approved';
+        pag.status = 'approved';
+        if (!pag.tokenDownload) {
+          pag.tokenDownload = crypto.randomBytes(32).toString('hex');
+        }
         salvarJSON(PAGAMENTOS_PATH, pagamentos);
+        // Envia e-mail apenas na primeira confirmação
+        if (!jaEraAprovado && pag.emailComprador) {
+          const link = `/download/${pag.tokenDownload}`;
+          enviarEmailDownload(pag.emailComprador, link, pag.itens)
+            .then(() => console.log(`📧 E-mail (webhook) enviado para ${pag.emailComprador}`))
+            .catch(e => console.error('Erro ao enviar e-mail (webhook):', e.message));
+        }
       }
-    } catch(e) {}
+    } catch(e) { console.error('Webhook erro:', e.message); }
   }
   res.sendStatus(200);
 });

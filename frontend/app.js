@@ -324,11 +324,14 @@ function pagamentoAprovado(email, linkDownload) {
   renderizarGrade();
   document.getElementById('status-pagamento').className = 'status-aprovado';
   document.getElementById('status-pagamento').innerHTML = `
-    Pagamento confirmado!<br/>
-    <a href="${linkDownload}" download style="color:#00d4aa;font-weight:bold;display:inline-block;margin-top:0.5rem">
-      Clique aqui para baixar suas fotos
+    ✅ Pagamento confirmado!<br/>
+    <a href="${linkDownload}" target="_blank" rel="noopener"
+       style="color:#00d4aa;font-weight:bold;display:inline-block;margin-top:0.5rem">
+      📥 Acessar e baixar suas fotos
     </a><br/>
-    <small style="color:#888;font-size:0.8rem">Link enviado para ${email}</small>
+    <small style="color:#ccc;font-size:0.78rem;margin-top:0.25rem;display:block">
+      Link também enviado para <strong>${email}</strong>
+    </small>
   `;
 }
 
