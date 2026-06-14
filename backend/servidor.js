@@ -180,6 +180,27 @@ app.get('/api/admin/fotos', authMiddleware, (req, res) => {
   res.json(fotos);
 });
 
+// Remoção em lote (seleção múltipla no painel admin)
+app.post('/api/admin/fotos/excluir-lote', authMiddleware, async (req, res) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ erro: 'Informe ao menos um id em "ids"' });
+  }
+
+  const catalogo = lerJSON(CATALOGO_PATH, { fotos: [] });
+  const remover  = catalogo.fotos.filter(f => ids.includes(f.id));
+
+  catalogo.fotos = catalogo.fotos.filter(f => !ids.includes(f.id));
+  salvarJSON(CATALOGO_PATH, catalogo);
+
+  await Promise.all(remover.map(foto => {
+    if (!foto.publicId) return Promise.resolve();
+    return cloudinary.uploader.destroy(`guilherme-fialho/originais/${foto.publicId}`).catch(() => {});
+  }));
+
+  res.json({ ok: true, removidas: remover.length });
+});
+
 app.delete('/api/admin/fotos/:id', authMiddleware, async (req, res) => {
   const catalogo = lerJSON(CATALOGO_PATH, { fotos: [] });
   const foto = catalogo.fotos.find(f => f.id === req.params.id);

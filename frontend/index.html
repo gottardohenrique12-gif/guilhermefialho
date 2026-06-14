@@ -22,6 +22,18 @@
     </div>
   </header>
 
+  <!-- SEÇÃO RECONHECIMENTO FACIAL -->
+  <section class="secao-facial">
+    <div class="facial-conteudo">
+      <div class="facial-texto">
+        <span class="facial-badge">Novidade</span>
+        <h2>Encontre suas fotos automaticamente</h2>
+        <p>Tire uma selfie ou envie uma foto sua e localizamos suas fotos nos eventos</p>
+      </div>
+      <button class="btn-facial" onclick="abrirReconhecimento()">🔍 Buscar minhas fotos</button>
+    </div>
+  </section>
+
   <!-- BANNER DE DESCONTO -->
   <div class="banner-desconto">
     Compre 3+ fotos e ganhe <strong>10% off</strong> •
@@ -142,6 +154,68 @@
           <span id="preview-preco"></span>
         </div>
         <button id="preview-btn-carrinho" onclick="toggleCarrinhoPreview()"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL RECONHECIMENTO FACIAL -->
+  <div id="modal-facial" class="modal escondido">
+    <div class="modal-conteudo facial-modal-conteudo">
+      <button class="fechar" onclick="fecharReconhecimento()">✕</button>
+      <h2>🔍 Encontre suas fotos</h2>
+
+      <!-- Passo 1: escolher origem -->
+      <div id="facial-passo-opcoes">
+        <p class="facial-instrucao">
+          Tire uma selfie ou envie uma foto do seu rosto. Vamos comparar com as fotos
+          dos eventos para encontrar as suas — tudo isso direto no seu navegador,
+          sem enviar sua foto para nenhum servidor.
+        </p>
+        <div class="facial-opcoes">
+          <button class="facial-opcao-btn" onclick="facialEscolherCamera()">
+            <span class="facial-opcao-icone">📷</span>
+            <span>Usar câmera</span>
+          </button>
+          <button class="facial-opcao-btn" onclick="facialEscolherUpload()">
+            <span class="facial-opcao-icone">🖼️</span>
+            <span>Enviar foto</span>
+          </button>
+        </div>
+        <input type="file" id="facial-input-arquivo" accept="image/*" class="escondido" onchange="facialArquivoSelecionado(event)"/>
+      </div>
+
+      <!-- Passo 2: câmera -->
+      <div id="facial-passo-camera" class="escondido">
+        <div class="camera-container">
+          <video id="facial-video" autoplay playsinline muted></video>
+          <div class="camera-guia"></div>
+        </div>
+        <div class="camera-acoes">
+          <button class="btn-capturar" onclick="facialCapturar()">📸 Capturar foto</button>
+          <button class="btn-cancelar-camera" onclick="facialCancelarCamera()">Cancelar</button>
+        </div>
+      </div>
+
+      <!-- Passo 3: preview + análise -->
+      <div id="facial-passo-preview" class="escondido">
+        <div class="preview-container">
+          <canvas id="facial-canvas"></canvas>
+          <div id="facial-face-box" class="face-box escondido"></div>
+        </div>
+        <div id="facial-status" class="facial-status facial-status-aguardando"></div>
+        <div class="preview-acoes">
+          <button id="facial-btn-buscar" class="btn-buscar" onclick="facialBuscar()" disabled>Buscar minhas fotos</button>
+          <button class="btn-tentar-novamente" onclick="facialReiniciar()">Tentar outra foto</button>
+        </div>
+      </div>
+
+      <!-- Passo 4: resultados -->
+      <div id="facial-passo-resultados" class="escondido">
+        <p id="facial-achou" class="facial-achou"></p>
+        <div id="facial-grade" class="facial-grade"></div>
+        <div class="preview-acoes" style="margin-top:1rem">
+          <button class="btn-tentar-novamente" onclick="facialReiniciar()">🔄 Buscar com outra foto</button>
+        </div>
       </div>
     </div>
   </div>

@@ -438,7 +438,7 @@
     .msg.erro    { background: rgba(184,64,64,0.08); border: 1px solid var(--danger);  color: var(--danger);  }
 
     /* FOTOS */
-    .filtro-barra { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .filtro-barra { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; }
 
     .filtro-barra select {
       background: var(--surface);
@@ -450,6 +450,91 @@
       outline: none;
       appearance: none;
     }
+
+    /* Barra de ações em lote (seleção de fotos) */
+    .fotos-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+
+    .fotos-toolbar .contagem-selecao {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      margin-right: auto;
+    }
+
+    .btn-toolbar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.4rem 0.9rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-toolbar:hover { border-color: var(--accent); color: var(--accent); }
+
+    .btn-toolbar.btn-excluir-lote {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+    .btn-toolbar.btn-excluir-lote:hover { background: rgba(184,64,64,0.06); }
+    .btn-toolbar.btn-excluir-lote:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      border-color: var(--border);
+      color: var(--muted);
+      background: none;
+    }
+
+    /* Checkbox de seleção sobre o card da foto */
+    .foto-card { position: relative; }
+
+    .foto-card-img-wrap {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .foto-card-check {
+      position: absolute;
+      top: 0.5rem;
+      left: 0.5rem;
+      width: 24px;
+      height: 24px;
+      border-radius: 5px;
+      background: rgba(255,255,255,0.85);
+      border: 1.5px solid var(--border-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      color: transparent;
+      transition: all 0.15s;
+      z-index: 2;
+    }
+
+    .foto-card-img-wrap:hover .foto-card-check { border-color: var(--accent); }
+
+    .foto-card.selecionada .foto-card-check {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .foto-card.selecionada {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+
+    .foto-card.selecionada .foto-card-img-wrap img { opacity: 0.85; }
 
     .fotos-lista {
       display: grid;
@@ -697,9 +782,18 @@
           <option value="">Todas</option>
         </select>
       </div>
+      <div class="fotos-toolbar">
+        <span class="contagem-selecao" id="contagem-selecao">Clique nas fotos para selecionar</span>
+        <button class="btn-toolbar" onclick="selecionarTodasFotos()">Selecionar todas</button>
+        <button class="btn-toolbar" onclick="limparSelecaoFotos()">Limpar seleção</button>
+        <button class="btn-toolbar btn-excluir-lote" id="btn-excluir-selecionadas" onclick="removerFotosSelecionadas()" disabled>
+          Excluir selecionadas
+        </button>
+      </div>
       <div class="fotos-lista" id="fotos-lista">
         <div class="loading">Carregando...</div>
       </div>
+      <div class="msg" id="msg-fotos"></div>
     </div>
 
     <!-- ESTRUTURA -->
@@ -1122,37 +1216,105 @@
   }
 
   // ════════════════════════════════════════════
-  // LISTAGEM
+  // LISTAGEM + SELEÇÃO MÚLTIPLA
   // ════════════════════════════════════════════
+  let fotosCarregadas  = [];
+  let fotosSelecionadas = new Set();
+
   async function carregarFotos() {
     const lista = document.getElementById('fotos-lista');
     const filtro = document.getElementById('filtro-categoria').value;
     lista.innerHTML = '<div class="loading">Carregando...</div>';
+    fotosSelecionadas.clear();
     try {
       const r = await fetch('/api/admin/fotos?categoria=' + filtro, { headers: { 'Authorization': token } });
-      const fotos = await r.json();
-      if (!fotos.length) {
-        lista.innerHTML = '<div class="sem-fotos">Nenhuma foto adicionada pelo admin ainda.</div>';
-        return;
-      }
-      lista.innerHTML = fotos.map(f => `
-        <div class="foto-card">
-          <img src="${f.preview}" alt="${f.nome}" loading="lazy"/>
-          <div class="foto-card-info">
-            <div class="foto-card-nome">${f.nome}</div>
-            <div class="foto-card-meta">R$ ${f.preco.toFixed(2).replace('.',',')} &middot; ${f.categoriaArtId || f.eventoId || ''}</div>
-            <button class="btn-remover-foto" onclick="removerFoto('${f.id}')">Remover</button>
-          </div>
-        </div>`
-      ).join('');
-    } catch(e) { lista.innerHTML = '<div class="sem-fotos">Erro ao carregar.</div>'; }
+      fotosCarregadas = await r.json();
+      renderizarFotos();
+    } catch(e) {
+      fotosCarregadas = [];
+      lista.innerHTML = '<div class="sem-fotos">Erro ao carregar.</div>';
+    }
+    atualizarToolbarSelecao();
   }
 
-  async function removerFoto(id) {
-    if (!confirm('Remover esta foto?')) return;
-    const r = await fetch('/api/admin/fotos/' + id, { method: 'DELETE', headers: { 'Authorization': token } });
-    if (r.ok) carregarFotos();
-    else alert('Erro ao remover.');
+  function renderizarFotos() {
+    const lista = document.getElementById('fotos-lista');
+    if (!fotosCarregadas.length) {
+      lista.innerHTML = '<div class="sem-fotos">Nenhuma foto adicionada pelo admin ainda.</div>';
+      return;
+    }
+    lista.innerHTML = fotosCarregadas.map(f => `
+      <div class="foto-card ${fotosSelecionadas.has(f.id) ? 'selecionada' : ''}" id="foto-card-${f.id}">
+        <div class="foto-card-img-wrap" onclick="toggleSelecaoFoto('${f.id}')">
+          <div class="foto-card-check">✓</div>
+          <img src="${f.preview}" alt="${f.nome}" loading="lazy"/>
+        </div>
+        <div class="foto-card-info">
+          <div class="foto-card-nome">${f.nome}</div>
+          <div class="foto-card-meta">R$ ${f.preco.toFixed(2).replace('.',',')} &middot; ${f.categoriaArtId || f.eventoId || ''}</div>
+        </div>
+      </div>`
+    ).join('');
+  }
+
+  function toggleSelecaoFoto(id) {
+    if (fotosSelecionadas.has(id)) fotosSelecionadas.delete(id);
+    else fotosSelecionadas.add(id);
+    document.getElementById(`foto-card-${id}`).classList.toggle('selecionada', fotosSelecionadas.has(id));
+    atualizarToolbarSelecao();
+  }
+
+  function selecionarTodasFotos() {
+    fotosCarregadas.forEach(f => fotosSelecionadas.add(f.id));
+    renderizarFotos();
+    atualizarToolbarSelecao();
+  }
+
+  function limparSelecaoFotos() {
+    fotosSelecionadas.clear();
+    renderizarFotos();
+    atualizarToolbarSelecao();
+  }
+
+  function atualizarToolbarSelecao() {
+    const n = fotosSelecionadas.size;
+    const contagem = document.getElementById('contagem-selecao');
+    const btnExcluir = document.getElementById('btn-excluir-selecionadas');
+    contagem.textContent = n > 0
+      ? `${n} foto${n > 1 ? 's' : ''} selecionada${n > 1 ? 's' : ''}`
+      : 'Clique nas fotos para selecionar';
+    btnExcluir.disabled = n === 0;
+  }
+
+  async function removerFotosSelecionadas() {
+    const ids = Array.from(fotosSelecionadas);
+    if (ids.length === 0) return;
+    const ok = confirm(
+      ids.length === 1
+        ? 'Remover esta foto?'
+        : `Remover estas ${ids.length} fotos? Essa ação não pode ser desfeita.`
+    );
+    if (!ok) return;
+
+    const btn = document.getElementById('btn-excluir-selecionadas');
+    btn.disabled = true;
+    btn.textContent = 'Excluindo...';
+
+    try {
+      const r = await fetch('/api/admin/fotos/excluir-lote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': token },
+        body: JSON.stringify({ ids })
+      });
+      if (!r.ok) throw new Error((await r.json()).erro || 'Erro ao excluir');
+      await carregarFotos();
+      mostrarMsg('fotos', `${ids.length} foto${ids.length > 1 ? 's' : ''} excluída${ids.length > 1 ? 's' : ''}.`, 'sucesso');
+    } catch(e) {
+      alert('Erro ao remover fotos: ' + e.message);
+    } finally {
+      btn.textContent = 'Excluir selecionadas';
+      atualizarToolbarSelecao();
+    }
   }
 
   // ════════════════════════════════════════════
