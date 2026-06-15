@@ -108,13 +108,15 @@ function mostrarPassoFacial(passo) {
 async function facialEscolherCamera() {
   try {
     // Solicita resolução alta para melhor qualidade do descritor
-    facialStream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: 'user',
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-      },
-    });
+    // iOS Safari rejeita restrições rígidas de resolução — usa "ideal" sem mínimo
+    // e faz fallback para { video: true } se necessário
+    try {
+      facialStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'user' } },
+      });
+    } catch (e1) {
+      facialStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    }
   } catch (e) {
     alert('Não foi possível acessar a câmera. Verifique as permissões do navegador.');
     return;
@@ -210,6 +212,7 @@ function facialCarregarImagemDeArquivo(file) {
 async function facialDetectarSelfie(canvas) {
   // Tentativas em ordem decrescente de inputSize.
   // inputSize maior = mais preciso mas mais lento; 512 é o máximo permitido.
+  // Começa em 512 para máxima qualidade, com fallback para dispositivos mais fracos
   const tentativas = [
     { inputSize: 512, scoreThreshold: 0.5 },
     { inputSize: 416, scoreThreshold: 0.4 },
@@ -218,11 +221,15 @@ async function facialDetectarSelfie(canvas) {
   ];
 
   for (const opts of tentativas) {
-    const det = await faceapi
-      .detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions(opts))
-      .withFaceLandmarks()
-      .withFaceDescriptor();
-    if (det) return det;
+    try {
+      const det = await faceapi
+        .detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions(opts))
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+      if (det) return det;
+    } catch (e) {
+      console.warn('Tentativa falhou com inputSize', opts.inputSize, e);
+    }
   }
   return null;
 }
@@ -405,13 +412,12 @@ async function facialBuscar() {
       if (!descritores) {
         const img = await facialCarregarImagemUrl(produto.preview);
 
-        // Tenta com inputSize alto primeiro para pegar rostos pequenos no fundo
+        // inputSize 608 para capturar rostos pequenos ao fundo
         let deteccoes = await faceapi
           .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 608, scoreThreshold: 0.4 }))
           .withFaceLandmarks()
           .withFaceDescriptors();
 
-        // Se não achou nada, tenta com scoreThreshold mais baixo
         if (!deteccoes.length) {
           deteccoes = await faceapi
             .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.3 }))
