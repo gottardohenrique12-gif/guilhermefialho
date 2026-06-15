@@ -1,7 +1,10 @@
 // ── Preview da foto ───────────────────────────────────────────
 let produtoPreviewAtual = null;
 
-function abrirPreview(id) {
+function abrirPreview(id, evento) {
+  // Evita que o clique na foto vaze para o overlay (que fecharia tudo)
+  if (evento && evento.stopPropagation) evento.stopPropagation();
+
   const produto = PRODUTOS.find(p => p.id === id);
   if (!produto) return;
   produtoPreviewAtual = produto;
@@ -12,6 +15,10 @@ function abrirPreview(id) {
     'R$ ' + produto.preco.toFixed(2).replace('.', ',');
 
   atualizarBtnPreview();
+
+  // Esconde modal facial se estiver aberto (mas mantém o overlay)
+  const modalFacial = document.getElementById('modal-facial');
+  if (modalFacial) modalFacial.classList.add('escondido');
 
   document.getElementById('modal-preview').classList.remove('escondido');
   document.getElementById('overlay').classList.remove('escondido');
@@ -348,7 +355,18 @@ function fecharPix() {
   document.getElementById('modal-pix').classList.add('escondido');
   document.getElementById('overlay').classList.add('escondido');
 }
-function fecharTudo() { fecharCarrinho(); fecharPix(); fecharPreview(); }
+function fecharTudo() {
+  fecharCarrinho();
+  fecharPix();
+  fecharPreview();
+  // Fecha modal facial se estiver aberto (sem chamar fecharReconhecimento
+  // para evitar recursão — apenas esconde o elemento)
+  const modalFacial = document.getElementById('modal-facial');
+  if (modalFacial && !modalFacial.classList.contains('escondido')) {
+    if (typeof facialPararCamera === 'function') facialPararCamera();
+    modalFacial.classList.add('escondido');
+  }
+}
 
 // ── Inicia ────────────────────────────────────────────────────
 init();

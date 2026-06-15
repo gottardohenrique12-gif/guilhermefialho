@@ -505,7 +505,7 @@ function facialMostrarResultados(resultados) {
       <div class="facial-card">
         <div class="facial-card-img">
           <img src="${produto.preview}" alt="${produto.nome}" loading="lazy"
-               onclick="abrirPreview('${produto.id}')" style="cursor:zoom-in"/>
+               onclick="abrirPreview('${produto.id}', event)" style="cursor:zoom-in"/>
           <span class="facial-similaridade">${sim}% parecido</span>
         </div>
         <div class="facial-card-info">
@@ -529,11 +529,4 @@ function facialToggleCarrinho(id) {
   btn.textContent = noCarrinho ? '✓ Adicionado' : '+ Carrinho';
 }
 
-// ────────────────────────────────────────────────────────────
-// Integração com fecharTudo() do app.js
-// ────────────────────────────────────────────────────────────
-const _fecharTudoOriginal = window.fecharTudo;
-window.fecharTudo = function() {
-  fecharReconhecimento();
-  if (_fecharTudoOriginal) _fecharTudoOriginal();
-};
+// fecharTudo() está em app.js e já fecha o modal facial nativamente.
