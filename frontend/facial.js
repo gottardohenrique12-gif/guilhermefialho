@@ -401,6 +401,13 @@ async function facialBuscar() {
   // ── Passo 1: detectar todos os rostos das fotos do catálogo ──
   const descritoresPorFoto = {};
 
+  // Em celulares (especialmente iOS Safari) o motor de detecção facial
+  // (TensorFlow.js) acumula memória a cada imagem processada. Com muitas
+  // fotos no catálogo isso pode estourar o limite de memória da aba e o
+  // iOS recarrega a página do zero — parecendo que "voltou para o início".
+  // Por isso: inputSize menor na varredura em massa + liberação explícita
+  // da imagem da memória + pequena pausa entre fotos para o navegador
+  // conseguir coletar lixo.
   for (let i = 0; i < candidatas.length; i++) {
     const produto = candidatas[i];
     status.className   = 'facial-status facial-status-aguardando';
@@ -412,15 +419,16 @@ async function facialBuscar() {
       if (!descritores) {
         const img = await facialCarregarImagemUrl(produto.preview);
 
-        // inputSize 608 para capturar rostos pequenos ao fundo
+        // inputSize 416 já captura bem rostos médios/pequenos em fotos de
+        // evento, com bem menos consumo de memória que 608.
         let deteccoes = await faceapi
-          .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 608, scoreThreshold: 0.4 }))
+          .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 }))
           .withFaceLandmarks()
           .withFaceDescriptors();
 
         if (!deteccoes.length) {
           deteccoes = await faceapi
-            .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.3 }))
+            .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.3 }))
             .withFaceLandmarks()
             .withFaceDescriptors();
         }
@@ -428,12 +436,23 @@ async function facialBuscar() {
         descritores = deteccoes.map(d => Array.from(d.descriptor));
         cache[produto.id] = descritores;
         facialSalvarCache(cache);
+
+        // Libera a imagem da memória explicitamente antes de seguir
+        img.src = '';
+        img.onload = null;
+        img.onerror = null;
       }
 
       descritoresPorFoto[produto.id] = descritores;
     } catch (e) {
       console.warn('Erro ao analisar foto', produto.nome, e);
       descritoresPorFoto[produto.id] = [];
+    }
+
+    // Pequena pausa a cada poucas fotos para dar respiro ao navegador
+    // (mais importante em celulares com pouca memória disponível)
+    if (i % 5 === 4) {
+      await new Promise(r => setTimeout(r, 30));
     }
   }
 
