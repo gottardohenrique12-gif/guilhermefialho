@@ -40,45 +40,21 @@
     Compre 5+ fotos e ganhe <strong>20% off</strong>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════
-       NAVEGAÇÃO PRINCIPAL: EVENTOS / ARTÍSTICAS
-  ══════════════════════════════════════════════════════════ -->
-  <nav class="nav-secoes">
-    <div class="nav-secoes-inner">
-      <button class="nav-secao-btn ativo" onclick="mudarSecao('eventos')" id="nav-btn-eventos">
-        <span>Eventos</span>
-      </button>
-      <button class="nav-secao-btn" onclick="mudarSecao('artisticas')" id="nav-btn-artisticas">
-        <span>Fotos Artísticas</span>
-      </button>
-    </div>
-  </nav>
-
-  <!-- ══════════════════════════════════════════════════════
-       SEÇÃO EVENTOS
-  ══════════════════════════════════════════════════════════ -->
+   
   <section id="secao-eventos" class="secao-conteudo">
-    <!-- Abas dos eventos -->
-    <div class="abas-container">
-      <div class="abas-scroll" id="abas-eventos"></div>
+    <div class="titulo-eventos" id="titulo-eventos">
+      <h2>Eventos</h2>
+      <p>Escolha um evento para visualizar as fotos.</p>
     </div>
-    <!-- Grade de fotos do evento selecionado -->
     <main>
-      <div id="grade-eventos" class="grade"></div>
-    </main>
-  </section>
-
-  <!-- ══════════════════════════════════════════════════════
-       SEÇÃO FOTOS ARTÍSTICAS
-  ══════════════════════════════════════════════════════════ -->
-  <section id="secao-artisticas" class="secao-conteudo escondido">
-    <!-- Abas das subcategorias artísticas -->
-    <div class="abas-container">
-      <div class="abas-scroll" id="abas-artisticas"></div>
-    </div>
-    <!-- Grade de fotos da categoria selecionada -->
-    <main>
-      <div id="grade-artisticas" class="grade"></div>
+      <div id="lista-eventos" class="eventos-grid"></div>
+      <div id="galeria-evento" class="escondido">
+        <div class="galeria-evento-topo">
+          <button class="btn-voltar-eventos" onclick="voltarParaEventos()">← Voltar aos eventos</button>
+          <h2 id="galeria-evento-nome"></h2>
+        </div>
+        <div id="grade-eventos" class="grade"></div>
+      </div>
     </main>
   </section>
 

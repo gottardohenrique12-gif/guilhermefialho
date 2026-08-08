@@ -868,3 +868,13 @@ footer a:hover { color: #f8f6f1; }
   }
   .btn-flutuante span { max-width: 0; opacity: 0; }
 }
+
+/* ===== Cards de eventos ===== */
+.titulo-eventos{text-align:center;margin:40px 20px 24px}.titulo-eventos h2{font-size:2rem;margin-bottom:8px}.titulo-eventos p{color:#777}
+.eventos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:28px;padding:20px 40px 60px;max-width:1200px;margin:0 auto}
+.evento-card{background:#fff;border-radius:16px;overflow:hidden;cursor:pointer;box-shadow:0 8px 25px rgba(0,0,0,.09);transition:transform .25s,box-shadow .25s}
+.evento-card:hover{transform:translateY(-5px);box-shadow:0 16px 38px rgba(0,0,0,.16)}
+.evento-imagem{height:250px;overflow:hidden;background:#eee}.evento-imagem img{width:100%;height:100%;object-fit:cover;transition:transform .35s}.evento-card:hover .evento-imagem img{transform:scale(1.06)}
+.evento-sem-capa{height:100%;display:flex;align-items:center;justify-content:center;color:#888}.evento-info{padding:18px;text-align:center}.evento-info h3{margin:0;font-size:1.15rem}
+.galeria-evento-topo{max-width:1200px;margin:30px auto 10px;padding:0 40px}.galeria-evento-topo h2{margin-top:18px}.btn-voltar-eventos{border:0;background:transparent;cursor:pointer;font:inherit;color:inherit;padding:8px 0}.btn-voltar-eventos:hover{text-decoration:underline}.eventos-vazio{grid-column:1/-1;text-align:center;color:#777}
+@media(max-width:640px){.eventos-grid{grid-template-columns:1fr;padding:16px 18px 40px}.evento-imagem{height:220px}.galeria-evento-topo{padding:0 18px}}

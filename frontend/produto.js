@@ -1,23 +1,13 @@
 // ============================================================
-// PRODUTO.JS — Catálogo com categorias: Eventos e Artísticas
+// PRODUTO.JS — Catálogo de eventos
 // ============================================================
 
 // Eventos são 100% dinâmicos — sem fixos
 const EVENTOS = [];
 
-const CATEGORIAS_ARTISTICAS = [
-  { id: 'paisagens',   nome: 'Paisagens',     icone: '', fotos: [] },
-  { id: 'animais',     nome: 'Animais',       icone: '', fotos: [] },
-  { id: 'luar',        nome: 'Luar',          icone: '', fotos: [] },
-  { id: 'natureza',    nome: 'Natureza',      icone: '', fotos: [] },
-  { id: 'serra',       nome: 'Serra Gaúcha',  icone: '', fotos: [] },
-  { id: 'arquitetura', nome: 'Arquitetura',   icone: '', fotos: [] },
-];
-
 // ── Array global PRODUTOS (mantém compatibilidade com facial.js) ──
 const PRODUTOS = [
   ...EVENTOS.flatMap(e => e.fotos),
-  ...CATEGORIAS_ARTISTICAS.flatMap(c => c.fotos),
 ];
 
 // ── DESCONTOS PROGRESSIVOS ────────────────────────────────────

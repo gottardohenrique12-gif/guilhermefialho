@@ -45,122 +45,69 @@ function fecharPreview() {
 }
 
 // ============================================================
-// APP.JS — Navegação por seções (Eventos / Artísticas) + Carrinho
+// APP.JS — Eventos + Carrinho
 // ============================================================
 
 let carrinho = [];
 let paymentId = null;
 let verificacaoInterval;
+let eventoAtivo = null;
 
-// Estado de navegação
-let secaoAtiva        = 'artisticas'; // começa em artísticas se não houver eventos
-let eventoAtivo       = null;
-let categoriaAtivaArt = null;
-
-// ── Inicialização ─────────────────────────────────────────────
 function init() {
-  if (CATEGORIAS_ARTISTICAS.length > 0) categoriaAtivaArt = CATEGORIAS_ARTISTICAS[0].id;
-  if (EVENTOS.length > 0) {
-    eventoAtivo = EVENTOS[0].id;
-    secaoAtiva  = 'eventos';
-  }
-
-  atualizarVisibilidadeEventos();
-  renderizarAbas();
-  renderizarGrade();
+  renderizarEventos();
   carregarFotosDinamicas();
 }
 
-// ── Mostra/oculta aba de eventos conforme existência ─────────
-function atualizarVisibilidadeEventos() {
-  const btnEventos = document.getElementById('nav-btn-eventos');
-  const secaoEventos = document.getElementById('secao-eventos');
-
-  if (EVENTOS.length === 0) {
-    // Sem eventos: esconde a aba e vai direto para artísticas
-    if (btnEventos) btnEventos.style.display = 'none';
-    secaoAtiva = 'artisticas';
-    if (secaoEventos) secaoEventos.classList.add('escondido');
-    document.getElementById('secao-artisticas').classList.remove('escondido');
-    document.getElementById('nav-btn-artisticas').classList.add('ativo');
-    document.getElementById('nav-btn-eventos').classList.remove('ativo');
-  } else {
-    if (btnEventos) btnEventos.style.display = '';
+function renderizarEventos() {
+  const lista = document.getElementById('lista-eventos');
+  if (!lista) return;
+  if (!EVENTOS.length) {
+    lista.innerHTML = '<p class="eventos-vazio">Nenhum evento disponível no momento.</p>';
+    return;
   }
+  lista.innerHTML = EVENTOS.map(e => {
+    const capa = e.capa || (e.fotos && e.fotos[0] ? e.fotos[0].preview : '');
+    return `
+      <article class="evento-card" onclick="abrirEvento('${e.id}')">
+        <div class="evento-imagem">
+          ${capa ? `<img src="${capa}" alt="${e.nome}" loading="lazy">` : '<div class="evento-sem-capa">Sem foto de capa</div>'}
+        </div>
+        <div class="evento-info"><h3>${e.nome}</h3></div>
+      </article>`;
+  }).join('');
 }
 
-// ── Troca a seção principal (Eventos ↔ Artísticas) ───────────
-function mudarSecao(secao) {
-  secaoAtiva = secao;
-  document.querySelectorAll('.nav-secao-btn').forEach(b => b.classList.remove('ativo'));
-  document.getElementById(`nav-btn-${secao}`).classList.add('ativo');
-  document.getElementById('secao-eventos').classList.toggle('escondido', secao !== 'eventos');
-  document.getElementById('secao-artisticas').classList.toggle('escondido', secao !== 'artisticas');
-}
-
-// ── Renderiza abas ────────────────────────────────────────────
-function renderizarAbas() {
-  const abasEventos = document.getElementById('abas-eventos');
-  abasEventos.innerHTML = EVENTOS.map(e => `
-    <button
-      class="aba-btn ${e.id === eventoAtivo ? 'ativo' : ''}"
-      onclick="selecionarEvento('${e.id}')"
-      id="aba-evento-${e.id}">
-      <span>${e.icone || ''}</span>
-      <span>${e.nome}</span>
-    </button>
-  `).join('');
-
-  const abasArt = document.getElementById('abas-artisticas');
-  abasArt.innerHTML = CATEGORIAS_ARTISTICAS.map(c => `
-    <button
-      class="aba-btn ${c.id === categoriaAtivaArt ? 'ativo' : ''}"
-      onclick="selecionarCategoriaArt('${c.id}')"
-      id="aba-art-${c.id}">
-      <span>${c.icone || ''}</span>
-      <span>${c.nome}</span>
-    </button>
-  `).join('');
-}
-
-// ── Seleciona evento ──────────────────────────────────────────
-function selecionarEvento(id) {
+function abrirEvento(id) {
   eventoAtivo = id;
-  document.querySelectorAll('#abas-eventos .aba-btn').forEach(b => b.classList.remove('ativo'));
-  const btn = document.getElementById(`aba-evento-${id}`);
-  if (btn) btn.classList.add('ativo');
+  const evento = EVENTOS.find(e => e.id === id);
+  if (!evento) return;
+  document.getElementById('lista-eventos').classList.add('escondido');
+  document.getElementById('titulo-eventos').classList.add('escondido');
+  document.getElementById('galeria-evento').classList.remove('escondido');
+  document.getElementById('galeria-evento-nome').textContent = evento.nome;
   renderizarGradeEventos();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ── Seleciona categoria artística ─────────────────────────────
-function selecionarCategoriaArt(id) {
-  categoriaAtivaArt = id;
-  document.querySelectorAll('#abas-artisticas .aba-btn').forEach(b => b.classList.remove('ativo'));
-  const btn = document.getElementById(`aba-art-${id}`);
-  if (btn) btn.classList.add('ativo');
-  renderizarGradeArtisticas();
+function voltarParaEventos() {
+  eventoAtivo = null;
+  document.getElementById('galeria-evento').classList.add('escondido');
+  document.getElementById('lista-eventos').classList.remove('escondido');
+  document.getElementById('titulo-eventos').classList.remove('escondido');
+  renderizarEventos();
 }
 
-// ── Renderiza grades ──────────────────────────────────────────
 function renderizarGrade() {
-  renderizarGradeEventos();
-  renderizarGradeArtisticas();
+  if (eventoAtivo) renderizarGradeEventos();
+  else renderizarEventos();
 }
 
 function renderizarGradeEventos() {
   const evento = EVENTOS.find(e => e.id === eventoAtivo);
-  const grade  = document.getElementById('grade-eventos');
-  if (!evento) { grade.innerHTML = ''; return; }
+  const grade = document.getElementById('grade-eventos');
+  if (!evento || !grade) return;
   grade.innerHTML = '';
   evento.fotos.forEach(produto => grade.appendChild(criarCard(produto)));
-}
-
-function renderizarGradeArtisticas() {
-  const cat   = CATEGORIAS_ARTISTICAS.find(c => c.id === categoriaAtivaArt);
-  const grade = document.getElementById('grade-artisticas');
-  if (!cat) { grade.innerHTML = ''; return; }
-  grade.innerHTML = '';
-  cat.fotos.forEach(produto => grade.appendChild(criarCard(produto)));
 }
 
 // ── Cria card ─────────────────────────────────────────────────
@@ -371,53 +318,30 @@ function fecharTudo() {
 // ── Inicia ────────────────────────────────────────────────────
 init();
 
-// ── Carrega estrutura dinâmica (eventos/categorias) + fotos do admin ──
+// ── Carrega eventos + fotos do admin ─────────────────────────
 async function carregarFotosDinamicas() {
   try {
-    // 1. Carrega eventos e categorias criados no painel admin
     const rEst = await fetch('/api/estrutura');
     if (rEst.ok) {
-      const { eventos: evsDin, categorias: catsDin } = await rEst.json();
-
-      evsDin.forEach(ev => {
-        if (!EVENTOS.some(e => e.id === ev.id)) {
-          EVENTOS.push({ ...ev, fotos: [] });
-        }
-      });
-
-      catsDin.forEach(cat => {
-        if (!CATEGORIAS_ARTISTICAS.some(c => c.id === cat.id)) {
-          CATEGORIAS_ARTISTICAS.push({ ...cat, fotos: [] });
-        }
+      const dados = await rEst.json();
+      (dados.eventos || []).forEach(ev => {
+        if (!EVENTOS.some(e => e.id === ev.id)) EVENTOS.push({ ...ev, fotos: [] });
       });
     }
 
-    // 2. Carrega fotos adicionadas via painel admin
     const rCat = await fetch('/api/catalogo');
     const fotos = await rCat.json();
-
-    fotos.forEach(foto => {
-      if (foto.categoria === 'artistica') {
-        const cat = CATEGORIAS_ARTISTICAS.find(c => c.id === foto.categoriaArtId);
-        if (cat && !cat.fotos.some(f => f.id === foto.id)) {
-          cat.fotos.push(foto);
-          PRODUTOS.push(foto);
-        }
-      } else if (foto.categoria === 'evento') {
-        const ev = EVENTOS.find(e => e.id === foto.eventoId);
-        if (ev && !ev.fotos.some(f => f.id === foto.id)) {
-          ev.fotos.push(foto);
-          PRODUTOS.push(foto);
-        }
+    fotos.filter(f => f.categoria === 'evento').forEach(foto => {
+      const ev = EVENTOS.find(e => e.id === foto.eventoId);
+      if (ev && !ev.fotos.some(f => f.id === foto.id)) {
+        ev.fotos.push(foto);
+        if (!PRODUTOS.some(p => p.id === foto.id)) PRODUTOS.push(foto);
       }
     });
-
-    // 3. Atualiza visibilidade da aba eventos e re-renderiza
-    atualizarVisibilidadeEventos();
-    renderizarAbas();
-    renderizarGrade();
-
+    renderizarEventos();
+    if (eventoAtivo) renderizarGradeEventos();
   } catch(e) {
     console.warn('Dados dinâmicos não carregados:', e.message);
   }
 }
+

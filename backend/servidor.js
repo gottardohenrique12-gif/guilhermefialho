@@ -272,24 +272,43 @@ app.get('/api/admin/eventos', authMiddleware, (req, res) => {
   res.json(lerJSON(ESTRUTURA_PATH, estruturaPadrao).eventos);
 });
 
-app.post('/api/admin/eventos', authMiddleware, (req, res) => {
-  const { nome } = req.body;
-  if (!nome) return res.status(400).json({ erro: 'Nome obrigatório' });
-  const estrutura = lerJSON(ESTRUTURA_PATH, estruturaPadrao);
-  const id = nome.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  if (estrutura.eventos.some(e => e.id === id))
-    return res.status(400).json({ erro: 'Evento já existe' });
-  estrutura.eventos.push({ id, nome });
-  salvarJSON(ESTRUTURA_PATH, estrutura);
-  res.json({ ok: true, id, nome });
+app.post('/api/admin/eventos', authMiddleware, upload.single('capa'), async (req, res) => {
+  try {
+    const { nome } = req.body;
+    if (!nome) return res.status(400).json({ erro: 'Nome obrigatório' });
+    if (!req.file) return res.status(400).json({ erro: 'Foto de capa obrigatória' });
+
+    const estrutura = lerJSON(ESTRUTURA_PATH, estruturaPadrao);
+    const id = nome.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    if (estrutura.eventos.some(e => e.id === id))
+      return res.status(400).json({ erro: 'Evento já existe' });
+
+    const bufferCapa = await sharp(req.file.buffer)
+      .rotate().resize({ width: 1600, height: 1000, fit: 'cover' })
+      .jpeg({ quality: 88, mozjpeg: true }).toBuffer();
+    const publicId = `capa-${id}`;
+    const resultado = await uploadParaCloudinary(bufferCapa, publicId, 'guilherme-fialho/capas-eventos');
+
+    const evento = { id, nome, capa: resultado.secure_url, capaPublicId: publicId };
+    estrutura.eventos.push(evento);
+    salvarJSON(ESTRUTURA_PATH, estrutura);
+    res.json({ ok: true, ...evento });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ erro: e.message });
+  }
 });
 
-app.delete('/api/admin/eventos/:id', authMiddleware, (req, res) => {
+app.delete('/api/admin/eventos/:id', authMiddleware, async (req, res) => {
   const estrutura = lerJSON(ESTRUTURA_PATH, estruturaPadrao);
+  const evento = estrutura.eventos.find(e => e.id === req.params.id);
   estrutura.eventos = estrutura.eventos.filter(e => e.id !== req.params.id);
   salvarJSON(ESTRUTURA_PATH, estrutura);
+  if (evento && evento.capaPublicId) {
+    try { await cloudinary.uploader.destroy(`guilherme-fialho/capas-eventos/${evento.capaPublicId}`); } catch(e) {}
+  }
   res.json({ ok: true });
 });
 
