@@ -12,17 +12,19 @@ const FACE_API_MODELS_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-
 
 // ── LIMIARES ────────────────────────────────────────────────
 // Limiar principal: distância máxima para considerar "mesma pessoa".
-// Valores menores = mais restritivo. Aqui priorizamos precisão para
-// evitar que pessoas diferentes apareçam como resultado.
-const FACIAL_LIMIAR = 0.50;
+// Valores menores = mais restritivo. 0.6 é bom equilíbrio entre
+// precisão e recall; usamos 0.62 para capturar mais fotos sem
+// gerar muitos falsos positivos.
+const FACIAL_LIMIAR = 0.62;
 
-// Segunda passagem moderadamente relaxada. Continua conservadora e
-// só é usada quando a busca principal não encontra nenhuma foto.
-const FACIAL_LIMIAR_RELAXADO = 0.56;
+// Limiar relaxado para uma segunda passagem quando o resultado
+// principal retorna 0 fotos — captura casos de ângulo/iluminação
+// diferentes.
+const FACIAL_LIMIAR_RELAXADO = 0.72;
 
 // Cache com versão — mude aqui se alterar parâmetros de detecção
 // para forçar recálculo nos navegadores dos visitantes.
-const FACIAL_CACHE_KEY = 'facial_descritores_v4';
+const FACIAL_CACHE_KEY = 'facial_descritores_v3';
 
 let facialModelosPromise = null;
 let facialStream          = null;
@@ -355,27 +357,16 @@ function facialMenorDistancia(descritoresFoto) {
 
   for (const desc of descritoresFoto) {
     const fa = new Float32Array(desc);
-    const d1 = faceapi.euclideanDistance(facialDescritorSelfie, fa);
 
-    // Quando temos o descritor extra, ele funciona como confirmação.
-    // Não basta apenas um dos dois descritores "gostar" do rosto.
+    const d1 = faceapi.euclideanDistance(facialDescritorSelfie, fa);
+    if (d1 < menorDist) menorDist = d1;
+
+    // Se temos o descritor do crop, usamos também (média ponderada)
     if (facialDescritorExtra) {
       const d2 = faceapi.euclideanDistance(facialDescritorExtra, fa);
-
-      // Se um dos dois discorda demais, descartamos esse rosto.
-      if (d1 > 0.58 || d2 > 0.58) continue;
-
-      // Usa uma média levemente puxada para o pior valor. Isso torna
-      // a comparação mais conservadora e reduz falsos positivos.
-      const media = (d1 + d2) / 2;
-      const pior  = Math.max(d1, d2);
-      const dCombinado = media * 0.7 + pior * 0.3;
-
+      // Combinação: pega a média dos dois descritores — atenua variações
+      const dCombinado = (d1 + d2) / 2;
       if (dCombinado < menorDist) menorDist = dCombinado;
-    } else {
-      // Fallback para navegadores/dispositivos onde o crop não gerou
-      // um segundo descritor. Continua usando limiar bem restritivo.
-      if (d1 < menorDist) menorDist = d1;
     }
   }
 
@@ -431,26 +422,16 @@ async function facialBuscar() {
         // inputSize 416 já captura bem rostos médios/pequenos em fotos de
         // evento, com bem menos consumo de memória que 608.
         let deteccoes = await faceapi
-          .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 }))
+          .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 }))
           .withFaceLandmarks()
           .withFaceDescriptors();
 
         if (!deteccoes.length) {
           deteccoes = await faceapi
-            .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.4 }))
+            .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.3 }))
             .withFaceLandmarks()
             .withFaceDescriptors();
         }
-
-        // Ignora detecções muito fracas ou rostos minúsculos, pois eles
-        // geram descritores pouco confiáveis e aumentam falsos positivos.
-        deteccoes = deteccoes.filter(d => {
-          const box = d.detection && d.detection.box;
-          const score = d.detection && typeof d.detection.score === 'number'
-            ? d.detection.score
-            : 1;
-          return box && score >= 0.40 && box.width >= 40 && box.height >= 40;
-        });
 
         descritores = deteccoes.map(d => Array.from(d.descriptor));
         cache[produto.id] = descritores;
@@ -477,37 +458,28 @@ async function facialBuscar() {
 
   // ── Passo 2: comparar com limiar principal ──
   let resultados = [];
-  const distancias = [];
-
   for (const produto of candidatas) {
     const descritores = descritoresPorFoto[produto.id];
     if (!descritores || !descritores.length) continue;
 
     const dist = facialMenorDistancia(descritores);
-    if (Number.isFinite(dist)) distancias.push({ produto, distancia: dist });
+    if (dist <= FACIAL_LIMIAR) {
+      resultados.push({ produto, distancia: dist });
+    }
   }
 
-  // Além do limiar absoluto, mantém apenas resultados próximos do melhor
-  // encontrado. Isso evita misturar rostos apenas "mais ou menos" parecidos.
-  const melhorDistancia = distancias.length
-    ? Math.min(...distancias.map(r => r.distancia))
-    : Infinity;
+  // ── Passo 3: se não achou nada, segunda passagem com limiar relaxado ──
+  if (resultados.length === 0) {
+    status.textContent = '🔄 Ampliando a busca...';
+    for (const produto of candidatas) {
+      const descritores = descritoresPorFoto[produto.id];
+      if (!descritores || !descritores.length) continue;
 
-  resultados = distancias.filter(r =>
-    r.distancia <= FACIAL_LIMIAR &&
-    r.distancia <= melhorDistancia + 0.08
-  );
-
-  // ── Passo 3: se não achou nada, segunda passagem moderada ──
-  if (resultados.length === 0 && Number.isFinite(melhorDistancia)) {
-    status.textContent = '🔄 Tentando uma busca mais ampla...';
-
-    resultados = distancias
-      .filter(r =>
-        r.distancia <= FACIAL_LIMIAR_RELAXADO &&
-        r.distancia <= melhorDistancia + 0.04
-      )
-      .map(r => ({ ...r, relaxado: true }));
+      const dist = facialMenorDistancia(descritores);
+      if (dist <= FACIAL_LIMIAR_RELAXADO) {
+        resultados.push({ produto, distancia: dist, relaxado: true });
+      }
+    }
   }
 
   // Ordena do mais parecido para o menos
@@ -538,7 +510,7 @@ function facialMostrarResultados(resultados) {
 
   const temRelaxado = resultados.some(r => r.relaxado);
   const aviso = temRelaxado
-    ? '<p style="font-size:0.85rem;color:#888;margin-bottom:0.5rem;">⚠️ Busca ampliada com critério conservador. Confira os resultados.</p>'
+    ? '<p style="font-size:0.85rem;color:#888;margin-bottom:0.5rem;">⚠️ Busca ampliada — pode incluir fotos de outras pessoas parecidas.</p>'
     : '';
 
   achouEl.innerHTML =
@@ -548,7 +520,7 @@ function facialMostrarResultados(resultados) {
   // dist=0 → 100%, dist=limiar → ~50%, dist=limiarRelaxado → ~30%
   function distParaSimilaridade(dist, relaxado) {
     const limiar = relaxado ? FACIAL_LIMIAR_RELAXADO : FACIAL_LIMIAR;
-    return Math.max(50, Math.min(100, Math.round(100 - (dist / limiar) * 50)));
+    return Math.max(30, Math.min(100, Math.round(100 - (dist / limiar) * 50)));
   }
 
   grade.innerHTML = resultados.map(({ produto, distancia, relaxado }) => {
