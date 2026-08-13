@@ -675,6 +675,7 @@
     }
   
     .capa-preview-wrap{margin:12px 0 18px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}.capa-preview{width:240px;height:150px;object-fit:cover;border-radius:10px;cursor:zoom-in;border:1px solid #ddd}.capa-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;align-items:center;justify-content:center;padding:24px}.capa-modal.aberto{display:flex}.capa-modal img{max-width:92vw;max-height:88vh;object-fit:contain}.capa-modal-fechar{position:absolute;right:24px;top:18px;border:0;background:transparent;color:#fff;font-size:40px;cursor:pointer}
+    .ofertas-box{border:1px solid var(--border);background:var(--surface);padding:1rem;margin:0 0 1rem}.ofertas-box-title{font-family:var(--mono);font-size:.68rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.75rem}.ofertas-lista{display:flex;flex-direction:column;gap:.6rem;margin-bottom:.7rem}.oferta-linha{display:grid;grid-template-columns:1fr 1fr auto;gap:.6rem;align-items:center}.oferta-linha input{width:100%;background:var(--bg);border:1px solid var(--border);padding:.62rem .7rem;font-family:var(--sans)}.btn-oferta-add{background:transparent;border:1px dashed var(--border);padding:.55rem .75rem;font-family:var(--mono);font-size:.66rem;cursor:pointer;width:100%;transition:.2s}.btn-oferta-add:hover{border-color:var(--accent);color:var(--accent)}.btn-oferta-remover{background:transparent;border:1px solid var(--border);color:var(--muted);width:36px;height:36px;cursor:pointer;font-size:1rem;line-height:1}.btn-oferta-remover:hover{border-color:#b3261e;color:#b3261e}.evento-admin-card{border:1px solid var(--border);background:var(--surface);padding:1rem;margin-bottom:.75rem}.evento-admin-topo{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;margin-bottom:.8rem}.evento-admin-acoes{display:flex;gap:.5rem;flex-wrap:wrap}.btn-save{background:var(--accent);color:#fff;border:0;padding:.42rem .75rem;font-family:var(--mono);font-size:.66rem;cursor:pointer}@media(max-width:640px){.oferta-linha{grid-template-columns:1fr 1fr auto}.evento-admin-topo{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -803,6 +804,12 @@
             <img id="capa-preview" class="capa-preview" alt="Prévia da capa" onclick="ampliarCapaPreview()">
             <small>Clique na imagem para ampliar</small>
           </div>
+          <div class="ofertas-box">
+            <div class="ofertas-box-title">Ofertas deste evento (opcional)</div>
+            <div id="nova-ofertas-lista" class="ofertas-lista"></div>
+            <button type="button" class="btn-oferta-add" onclick="adicionarOfertaNova()">+ Adicionar desconto</button>
+            <small style="color:var(--muted);display:block;margin-top:.65rem">Crie quantas faixas quiser. Ex.: 3 fotos = 10%, 5 fotos = 15%, 10 fotos = 25%. Se não adicionar nenhuma, o evento fica sem desconto.</small>
+          </div>
           <button class="btn-add" onclick="criarEvento()">Criar evento</button>
           <div class="msg" id="msg-ev"></div>
           <div class="lista-itens" id="lista-eventos"></div>
@@ -890,13 +897,104 @@
       estrutura.eventos.map(e => `<option value="${e.id}">${e.nome}</option>`).join('');
   }
 
+  function criarLinhaOfertaHtml(minFotos = '', percentual = '') {
+    const min = minFotos === '' || minFotos == null ? '' : Number(minFotos);
+    const pct = percentual === '' || percentual == null ? '' : Number(percentual);
+    return `
+      <div class="oferta-linha">
+        <input class="oferta-min" type="number" min="1" step="1" placeholder="Quantidade de fotos" value="${min}">
+        <input class="oferta-pct" type="number" min="0.01" max="100" step="0.01" placeholder="% de desconto" value="${pct}">
+        <button type="button" class="btn-oferta-remover" title="Remover desconto" onclick="this.closest('.oferta-linha').remove()">×</button>
+      </div>`;
+  }
+
+  function adicionarOfertaNova(minFotos = '', percentual = '') {
+    document.getElementById('nova-ofertas-lista').insertAdjacentHTML(
+      'beforeend',
+      criarLinhaOfertaHtml(minFotos, percentual)
+    );
+  }
+
+  function adicionarOfertaEvento(id, minFotos = '', percentual = '') {
+    const lista = document.getElementById(`ofertas-${id}`);
+    if (lista) lista.insertAdjacentHTML('beforeend', criarLinhaOfertaHtml(minFotos, percentual));
+  }
+
+  function validarOfertasDoContainer(container) {
+    if (!container) return { ok: true, ofertas: [] };
+
+    const ofertas = [];
+    const quantidades = new Set();
+    const linhas = [...container.querySelectorAll('.oferta-linha')];
+
+    for (let i = 0; i < linhas.length; i++) {
+      const linha = linhas[i];
+      const minRaw = linha.querySelector('.oferta-min')?.value.trim() || '';
+      const pctRaw = linha.querySelector('.oferta-pct')?.value.trim() || '';
+
+      // Linha totalmente vazia é simplesmente ignorada.
+      if (!minRaw && !pctRaw) continue;
+
+      const minFotos = Number(minRaw);
+      const percentual = Number(pctRaw);
+
+      if (!Number.isInteger(minFotos) || minFotos < 1) {
+        return { ok: false, erro: `Na oferta ${i + 1}, informe uma quantidade inteira de fotos maior que zero.` };
+      }
+      if (!Number.isFinite(percentual) || percentual <= 0 || percentual > 100) {
+        return { ok: false, erro: `Na oferta ${i + 1}, informe um desconto maior que 0% e de no máximo 100%.` };
+      }
+      if (quantidades.has(minFotos)) {
+        return { ok: false, erro: `Existem duas ofertas para ${minFotos} foto(s). Use uma quantidade diferente em cada faixa.` };
+      }
+
+      quantidades.add(minFotos);
+      ofertas.push({ minFotos, percentual });
+    }
+
+    ofertas.sort((a, b) => a.minFotos - b.minFotos);
+    return { ok: true, ofertas };
+  }
+
   function renderizarEstrutura() {
     document.getElementById('lista-eventos').innerHTML =
-      estrutura.eventos.map(e => `
-        <div class="item-linha">
-          <div><span class="item-nome">${e.nome}</span><span class="item-id">${e.id}</span></div>
-          <button class="btn-del" onclick="deletarEvento('${e.id}')">Remover</button>
-        </div>`).join('') || '<div class="loading">Nenhum evento.</div>';
+      estrutura.eventos.map(e => {
+        const ofertas = (e.ofertas || []).slice().sort((a,b) => Number(a.minFotos) - Number(b.minFotos));
+        const linhas = ofertas.map(o => criarLinhaOfertaHtml(o.minFotos, o.percentual)).join('');
+        return `
+        <div class="evento-admin-card">
+          <div class="evento-admin-topo">
+            <div><span class="item-nome">${e.nome}</span><span class="item-id">${e.id}</span></div>
+            <button class="btn-del" onclick="deletarEvento('${e.id}')">Remover</button>
+          </div>
+          <div class="ofertas-box" style="margin-bottom:.7rem">
+            <div class="ofertas-box-title">Ofertas do evento</div>
+            <div id="ofertas-${e.id}" class="ofertas-lista">${linhas}</div>
+            <button type="button" class="btn-oferta-add" onclick="adicionarOfertaEvento('${e.id}')">+ Adicionar desconto</button>
+            <small style="color:var(--muted);display:block;margin-top:.65rem">Você pode adicionar, remover ou alterar qualquer faixa de desconto deste evento.</small>
+          </div>
+          <div class="evento-admin-acoes">
+            <button class="btn-save" onclick="salvarOfertasEvento('${e.id}')">Salvar ofertas</button>
+          </div>
+        </div>`;
+      }).join('') || '<div class="loading">Nenhum evento.</div>';
+  }
+
+  async function salvarOfertasEvento(id) {
+    const validacao = validarOfertasDoContainer(document.getElementById(`ofertas-${id}`));
+    if (!validacao.ok) return mostrarMsg('ev', validacao.erro, 'erro');
+    const ofertas = validacao.ofertas;
+    const r = await fetch(`/api/admin/eventos/${id}/ofertas`, {
+      method: 'PUT',
+      headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ofertas })
+    });
+    const d = await r.json();
+    if (!r.ok) return mostrarMsg('ev', d.erro || 'Erro ao salvar ofertas.', 'erro');
+    const evento = estrutura.eventos.find(e => e.id === id);
+    if (evento) evento.ofertas = d.ofertas || [];
+    renderizarEstrutura();
+    mostrarMsg('ev', 'Ofertas atualizadas.', 'sucesso');
   }
 
   function previewCapaEvento(event) {
@@ -921,18 +1019,24 @@
   async function criarEvento() {
     const nome = document.getElementById('novo-evento-nome').value.trim();
     const capa = document.getElementById('novo-evento-capa').files[0];
+    const validacao = validarOfertasDoContainer(document.getElementById('nova-ofertas-lista'));
+    if (!validacao.ok) return mostrarMsg('ev', validacao.erro, 'erro');
+    const ofertas = validacao.ofertas;
     if (!nome) return mostrarMsg('ev', 'Informe o nome do evento.', 'erro');
     if (!capa) return mostrarMsg('ev', 'Escolha a foto de capa.', 'erro');
 
     const form = new FormData();
     form.append('nome', nome);
     form.append('capa', capa);
+    form.append('ofertas', JSON.stringify(ofertas));
     const r = await fetch('/api/admin/eventos', { method:'POST', headers:{ 'Authorization': token }, body:form });
     const d = await r.json();
     if (r.ok) {
-      estrutura.eventos.push({ id:d.id, nome:d.nome, capa:d.capa });
+      estrutura.eventos.push({ id:d.id, nome:d.nome, capa:d.capa, ofertas:d.ofertas || [] });
       document.getElementById('novo-evento-nome').value = '';
       document.getElementById('novo-evento-capa').value = '';
+      document.getElementById('nova-ofertas-lista').innerHTML = '';
+      adicionarOfertaNova();
       document.getElementById('capa-preview-wrap').style.display = 'none';
       preencherSelects(); preencherFiltro(); renderizarEstrutura();
       mostrarMsg('ev', 'Evento criado.', 'sucesso');
@@ -1317,6 +1421,9 @@
       if (r.ok) { mostrarPainel(); return; }
     }
   })();
+
+  // Começa a criação de um evento com uma faixa vazia; o dono pode remover ou adicionar outras.
+  adicionarOfertaNova();
 </script>
 </body>
 </html>
