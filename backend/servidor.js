@@ -272,9 +272,25 @@ app.get('/api/admin/eventos', authMiddleware, (req, res) => {
   res.json(lerJSON(ESTRUTURA_PATH, estruturaPadrao).eventos);
 });
 
+function normalizarOfertas(ofertas) {
+  if (!Array.isArray(ofertas)) return [];
+  const normalizadas = ofertas
+    .map(o => ({ minFotos: Number(o.minFotos), percentual: Number(o.percentual) }))
+    .filter(o => Number.isInteger(o.minFotos) && o.minFotos >= 1 && Number.isFinite(o.percentual) && o.percentual > 0 && o.percentual <= 100)
+    .sort((a, b) => a.minFotos - b.minFotos);
+  const porQuantidade = new Map();
+  normalizadas.forEach(o => porQuantidade.set(o.minFotos, o));
+  return [...porQuantidade.values()].sort((a, b) => a.minFotos - b.minFotos);
+}
+
 app.post('/api/admin/eventos', authMiddleware, upload.single('capa'), async (req, res) => {
   try {
     const { nome } = req.body;
+    let ofertas = [];
+    if (req.body.ofertas) {
+      try { ofertas = normalizarOfertas(JSON.parse(req.body.ofertas)); }
+      catch (_) { return res.status(400).json({ erro: 'Formato de ofertas inválido' }); }
+    }
     if (!nome) return res.status(400).json({ erro: 'Nome obrigatório' });
     if (!req.file) return res.status(400).json({ erro: 'Foto de capa obrigatória' });
 
@@ -291,7 +307,7 @@ app.post('/api/admin/eventos', authMiddleware, upload.single('capa'), async (req
     const publicId = `capa-${id}`;
     const resultado = await uploadParaCloudinary(bufferCapa, publicId, 'guilherme-fialho/capas-eventos');
 
-    const evento = { id, nome, capa: resultado.secure_url, capaPublicId: publicId };
+    const evento = { id, nome, capa: resultado.secure_url, capaPublicId: publicId, ofertas };
     estrutura.eventos.push(evento);
     salvarJSON(ESTRUTURA_PATH, estrutura);
     res.json({ ok: true, ...evento });
@@ -299,6 +315,16 @@ app.post('/api/admin/eventos', authMiddleware, upload.single('capa'), async (req
     console.error(e);
     res.status(500).json({ erro: e.message });
   }
+});
+
+app.put('/api/admin/eventos/:id/ofertas', authMiddleware, (req, res) => {
+  const estrutura = lerJSON(ESTRUTURA_PATH, estruturaPadrao);
+  const evento = estrutura.eventos.find(e => e.id === req.params.id);
+  if (!evento) return res.status(404).json({ erro: 'Evento não encontrado' });
+  const ofertas = normalizarOfertas(req.body.ofertas);
+  evento.ofertas = ofertas;
+  salvarJSON(ESTRUTURA_PATH, estrutura);
+  res.json({ ok: true, ofertas });
 });
 
 app.delete('/api/admin/eventos/:id', authMiddleware, async (req, res) => {

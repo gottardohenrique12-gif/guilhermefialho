@@ -85,6 +85,7 @@ function abrirEvento(id) {
   document.getElementById('titulo-eventos').classList.add('escondido');
   document.getElementById('galeria-evento').classList.remove('escondido');
   document.getElementById('galeria-evento-nome').textContent = evento.nome;
+  atualizarBannerOfertas(evento);
   renderizarGradeEventos();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -94,7 +95,38 @@ function voltarParaEventos() {
   document.getElementById('galeria-evento').classList.add('escondido');
   document.getElementById('lista-eventos').classList.remove('escondido');
   document.getElementById('titulo-eventos').classList.remove('escondido');
+  const banner = document.getElementById('banner-desconto');
+  if (banner) banner.classList.add('escondido');
   renderizarEventos();
+}
+
+
+function ofertasValidas(evento) {
+  return (evento?.ofertas || [])
+    .map(o => ({ minFotos: Number(o.minFotos), percentual: Number(o.percentual) }))
+    .filter(o => Number.isFinite(o.minFotos) && o.minFotos >= 1 && Number.isFinite(o.percentual) && o.percentual > 0)
+    .sort((a, b) => b.minFotos - a.minFotos);
+}
+
+function atualizarBannerOfertas(evento) {
+  const banner = document.getElementById('banner-desconto');
+  if (!banner) return;
+  const ofertas = ofertasValidas(evento).sort((a, b) => a.minFotos - b.minFotos);
+  if (!ofertas.length) {
+    banner.textContent = '';
+    banner.classList.add('escondido');
+    return;
+  }
+  banner.innerHTML = ofertas
+    .map(o => `Compre ${o.minFotos}+ fotos e ganhe <strong>${o.percentual}% off</strong>`)
+    .join(' • ');
+  banner.classList.remove('escondido');
+}
+
+function calcularDescontoDoEvento(eventoId, qtdFotos) {
+  const evento = EVENTOS.find(e => e.id === eventoId);
+  const ofertas = ofertasValidas(evento);
+  return ofertas.find(o => qtdFotos >= o.minFotos) || { minFotos: 0, percentual: 0 };
 }
 
 function renderizarGrade() {
@@ -151,15 +183,39 @@ function atualizarContador() {
 }
 
 function calcularTotais() {
-  const subtotal  = carrinho.reduce((s, p) => s + p.preco, 0);
-  const desconto  = calcularDesconto(carrinho.length);
-  const valorDesc = subtotal * (desconto.percentual / 100);
-  const total     = subtotal - valorDesc;
-  return { subtotal, desconto, valorDesc, total };
+  const subtotal = carrinho.reduce((s, p) => s + p.preco, 0);
+  const grupos = new Map();
+
+  carrinho.forEach(produto => {
+    const eventoId = produto.eventoId || '__sem_evento__';
+    if (!grupos.has(eventoId)) grupos.set(eventoId, []);
+    grupos.get(eventoId).push(produto);
+  });
+
+  let valorDesc = 0;
+  const descontosAplicados = [];
+
+  grupos.forEach((itens, eventoId) => {
+    if (eventoId === '__sem_evento__') return;
+    const oferta = calcularDescontoDoEvento(eventoId, itens.length);
+    if (oferta.percentual <= 0) return;
+
+    const subtotalEvento = itens.reduce((s, p) => s + p.preco, 0);
+    valorDesc += subtotalEvento * (oferta.percentual / 100);
+    const evento = EVENTOS.find(e => e.id === eventoId);
+    descontosAplicados.push({
+      eventoId,
+      nome: evento?.nome || 'Evento',
+      percentual: oferta.percentual
+    });
+  });
+
+  const total = Math.max(0, subtotal - valorDesc);
+  return { subtotal, valorDesc, total, descontosAplicados };
 }
 
 function abrirCarrinho() {
-  const { subtotal, desconto, valorDesc, total } = calcularTotais();
+  const { subtotal, valorDesc, total, descontosAplicados } = calcularTotais();
   const vazio  = document.getElementById('carrinho-vazio');
   const itens  = document.getElementById('carrinho-itens');
   const resumo = document.getElementById('carrinho-resumo');
@@ -188,9 +244,10 @@ function abrirCarrinho() {
       `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
 
     const linhaDesc = document.getElementById('resumo-desconto-linha');
-    if (desconto.percentual > 0) {
+    if (valorDesc > 0) {
       linhaDesc.classList.remove('escondido');
-      document.getElementById('resumo-desconto-label').textContent = `Desconto (${desconto.percentual}%):`;
+      const detalhe = descontosAplicados.map(d => `${d.nome}: ${d.percentual}%`).join(' • ');
+      document.getElementById('resumo-desconto-label').textContent = detalhe ? `Desconto (${detalhe}):` : 'Desconto:';
       document.getElementById('resumo-desconto-valor').textContent = `- R$ ${valorDesc.toFixed(2).replace('.', ',')}`;
     } else {
       linhaDesc.classList.add('escondido');
